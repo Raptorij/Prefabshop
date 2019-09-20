@@ -3,58 +3,58 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 
-public static class ScriptableObjectUtility
+namespace Packages.PrefabshopEditor
 {
-    /// <summary>
-    //	This makes it easy to create, name and place unique new ScriptableObject asset files.
-    /// </summary>
-    public static void CreateAsset<T>() where T : ScriptableObject
+    public static class ScriptableObjectUtility
     {
-        T asset = ScriptableObject.CreateInstance<T>();
-
-        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-        if (path == "")
+        public static void CreateAsset<T>() where T : ScriptableObject
         {
-            path = "Assets";
-        }
-        else if (Path.GetExtension(path) != "")
-        {
-            path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
-        }
+            T asset = ScriptableObject.CreateInstance<T>();
 
-        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + typeof(T).ToString() + ".asset");
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+            if (path == "")
+            {
+                path = "Assets";
+            }
+            else if (Path.GetExtension(path) != "")
+            {
+                path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+            }
 
-        AssetDatabase.CreateAsset(asset, assetPathAndName);
+            string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + typeof(T).ToString() + ".asset");
 
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-        EditorUtility.FocusProjectWindow();
-        Selection.activeObject = asset;        
-    }
+            AssetDatabase.CreateAsset(asset, assetPathAndName);
 
-    public static T CreateAsset<T>(string newPath) where T : ScriptableObject
-    {
-        var asset = ScriptableObject.CreateInstance<T>();
-
-        string path = newPath;
-        if (path == "")
-        {
-            path = "Assets";
-        }
-        else if (Path.GetExtension(path) != "")
-        {
-            path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = asset;
         }
 
-        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + typeof(T).ToString() + ".asset");
+        public static T CreateAsset<T>(string newPath) where T : ScriptableObject
+        {
+            var asset = ScriptableObject.CreateInstance<T>();
 
-        AssetDatabase.CreateAsset(asset, assetPathAndName);
+            string path = newPath;
+            if (path == "")
+            {
+                path = "Assets";
+            }
+            else if (Path.GetExtension(path) != "")
+            {
+                path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+            }
 
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-        EditorUtility.FocusProjectWindow();
-        Selection.activeObject = asset;
-        return asset;
+            string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + typeof(T).ToString() + ".asset");
+
+            AssetDatabase.CreateAsset(asset, assetPathAndName);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = asset;
+            return asset;
+        }
     }
 }
 #endif

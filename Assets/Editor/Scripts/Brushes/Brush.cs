@@ -3,71 +3,74 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class BrushKeyCodeAttribute : System.Attribute
+namespace Packages.PrefabshopEditor
 {
-    public readonly KeyCode keyCode;
-
-    public BrushKeyCodeAttribute(KeyCode keyCode)
+    public class BrushKeyCodeAttribute : System.Attribute
     {
-        this.keyCode = keyCode;
-    }
-}
+        public readonly KeyCode keyCode;
 
-public abstract class Brush
-{
-    public BrushInfo brushInfo;
-    public PaintSettings paintSettings;
-    public GameObject targetSpawnObject;
-
-
-    public Brush(BrushInfo info, PaintSettings settings)
-    {
-        brushInfo = info;
-        paintSettings = info == null? settings : brushInfo.settings;
-    }    
-
-    public virtual void CastBrush()
-    {
-        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-        var drawPointRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-        RaycastHit drawPointHit;
-
-        if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
+        public BrushKeyCodeAttribute(KeyCode keyCode)
         {
-            Handles.color = paintSettings.placeBrush;
-            Handles.DrawSolidDisc(drawPointHit.point, drawPointHit.normal, paintSettings.size / 2);
-            Handles.color = Color.white;
-            Handles.DrawWireDisc(drawPointHit.point, drawPointHit.normal, paintSettings.size / 2);
-            Handles.color = Color.yellow;
-            Handles.DrawLine(drawPointHit.point, drawPointHit.point + drawPointHit.normal * paintSettings.gap);
-
-            Handles.color = Color.white;
-
-            Vector3 mousePosition = Event.current.mousePosition;
-            var ray = HandleUtility.GUIPointToWorldRay(mousePosition);
-            mousePosition = ray.origin;
-
-            Handles.BeginGUI();
-            Handles.Label(mousePosition - Vector3.up * 0.05f + Vector3.forward * 0.05f, $"Name:{drawPointHit.collider.gameObject.name}" +
-                                        (drawPointHit.collider.gameObject.transform.parent ?
-                                        $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
-                                        $"\nTag: {drawPointHit.collider.gameObject.tag}" +
-                                        $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
-            Handles.EndGUI();
-            if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
-            {
-                if (Event.current.type == EventType.MouseDown)
-                {
-                    targetSpawnObject = drawPointHit.collider.gameObject;
-                }
-                Paint(drawPointHit);
-            }
-            SceneView.RepaintAll();
+            this.keyCode = keyCode;
         }
     }
 
-    public virtual void Paint(RaycastHit drawPointHit)
+    public abstract class Brush
     {
-        
+        public BrushInfo brushInfo;
+        public PaintSettings paintSettings;
+        public GameObject targetSpawnObject;
+
+
+        public Brush(BrushInfo info, PaintSettings settings)
+        {
+            brushInfo = info;
+            paintSettings = info == null ? settings : brushInfo.settings;
+        }
+
+        public virtual void CastBrush()
+        {
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            var drawPointRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+            RaycastHit drawPointHit;
+
+            if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
+            {
+                Handles.color = paintSettings.placeBrush;
+                Handles.DrawSolidDisc(drawPointHit.point, drawPointHit.normal, paintSettings.size / 2);
+                Handles.color = Color.white;
+                Handles.DrawWireDisc(drawPointHit.point, drawPointHit.normal, paintSettings.size / 2);
+                Handles.color = Color.yellow;
+                Handles.DrawLine(drawPointHit.point, drawPointHit.point + drawPointHit.normal * paintSettings.gap);
+
+                Handles.color = Color.white;
+
+                Vector3 mousePosition = Event.current.mousePosition;
+                var ray = HandleUtility.GUIPointToWorldRay(mousePosition);
+                mousePosition = ray.origin;
+
+                Handles.BeginGUI();
+                Handles.Label(mousePosition - Vector3.up * 0.05f + Vector3.forward * 0.05f, $"Name:{drawPointHit.collider.gameObject.name}" +
+                                            (drawPointHit.collider.gameObject.transform.parent ?
+                                            $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
+                                            $"\nTag: {drawPointHit.collider.gameObject.tag}" +
+                                            $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
+                Handles.EndGUI();
+                if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
+                {
+                    if (Event.current.type == EventType.MouseDown)
+                    {
+                        targetSpawnObject = drawPointHit.collider.gameObject;
+                    }
+                    Paint(drawPointHit);
+                }
+                SceneView.RepaintAll();
+            }
+        }
+
+        public virtual void Paint(RaycastHit drawPointHit)
+        {
+
+        }
     }
 }

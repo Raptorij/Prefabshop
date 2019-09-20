@@ -4,39 +4,42 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 
-[BrushKeyCode(KeyCode.E)]
-public class EraserBrush : Brush
+namespace Packages.PrefabshopEditor
 {
-    public EraserBrush(BrushInfo into, PaintSettings settings) : base(into, settings) { }
-
-    public override void Paint(RaycastHit drawPointHit)
+    [BrushKeyCode(KeyCode.E)]
+    public class EraserBrush : Brush
     {
-        base.Paint(drawPointHit);
-        var transformArray = GameObject.FindObjectsOfType<GameObject>()
-                            .Where(t => Vector3.Distance(t.transform.position, drawPointHit.point) < paintSettings.size / 2f)
-                            .ToArray();
-        List<GameObject> onlyPrefabs = new List<GameObject>();
-        foreach (var coll in transformArray)
+        public EraserBrush(BrushInfo into, PaintSettings settings) : base(into, settings) { }
+
+        public override void Paint(RaycastHit drawPointHit)
         {
-            if (PrefabUtility.GetPrefabInstanceHandle(coll.gameObject) != null)
+            base.Paint(drawPointHit);
+            var transformArray = GameObject.FindObjectsOfType<GameObject>()
+                                .Where(t => Vector3.Distance(t.transform.position, drawPointHit.point) < paintSettings.size / 2f)
+                                .ToArray();
+            List<GameObject> onlyPrefabs = new List<GameObject>();
+            foreach (var coll in transformArray)
             {
-                var prefab = PrefabUtility.GetOutermostPrefabInstanceRoot(coll.gameObject);
-                if (!onlyPrefabs.Contains(prefab))
+                if (PrefabUtility.GetPrefabInstanceHandle(coll.gameObject) != null)
                 {
-                    onlyPrefabs.Add(prefab);
+                    var prefab = PrefabUtility.GetOutermostPrefabInstanceRoot(coll.gameObject);
+                    if (!onlyPrefabs.Contains(prefab))
+                    {
+                        onlyPrefabs.Add(prefab);
+                    }
                 }
             }
-        }
-        foreach (var go in onlyPrefabs)
-        {
-            var prefabInstance = PrefabUtility.GetPrefabInstanceHandle(go);
-            GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(go) as GameObject;
-            if (brushInfo.brushObjects.Contains(prefabAsset))
+            foreach (var go in onlyPrefabs)
             {
-                Undo.DestroyObjectImmediate(prefabInstance);
-                Undo.DestroyObjectImmediate(go);
+                var prefabInstance = PrefabUtility.GetPrefabInstanceHandle(go);
+                GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(go) as GameObject;
+                if (brushInfo.brushObjects.Contains(prefabAsset))
+                {
+                    Undo.DestroyObjectImmediate(prefabInstance);
+                    Undo.DestroyObjectImmediate(go);
+                }
             }
+            onlyPrefabs.Clear();
         }
-        onlyPrefabs.Clear();
     }
 }
