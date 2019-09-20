@@ -15,7 +15,7 @@ namespace Packages.PrefabshopEditor
         {
             base.Paint(drawPointHit);
             var transformArray = GameObject.FindObjectsOfType<GameObject>()
-                                .Where(t => Vector3.Distance(t.transform.position, drawPointHit.point) < paintSettings.size / 2f)
+                                .Where(t => Vector3.Distance(t.transform.position, drawPointHit.point) < paintSettings.radius)
                                 .ToArray();
             List<GameObject> onlyPrefabs = new List<GameObject>();
             foreach (var coll in transformArray)

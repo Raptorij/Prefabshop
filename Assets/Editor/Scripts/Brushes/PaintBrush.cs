@@ -28,7 +28,7 @@ namespace Packages.PrefabshopEditor
                 do
                 {
                     whileBreaker--;
-                    var randomSeed = Random.insideUnitCircle * paintSettings.size / 2;
+                    var randomSeed = Random.insideUnitCircle * paintSettings.radius;
                     var random = perpendicularX * randomSeed.x + perpendicularY * randomSeed.y;
 
                     Ray rayRandom = new Ray(castRay.origin, cast.point + random - castRay.origin);
@@ -36,10 +36,17 @@ namespace Packages.PrefabshopEditor
 
                     if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
                     {
-                        if (paintSettings.checkObjeck)
+                        var hitObj = castCheck.collider.gameObject;
+                        if (paintSettings.firstObjectFilter)
                         {
-                            var hitObj = castCheck.collider.gameObject;
                             if (targetSpawnObject == hitObj)
+                            {
+                                listRaycast.Add(castCheck);
+                            }
+                        }
+                        else if (paintSettings.filterObject != null)
+                        {
+                            if (paintSettings.filterObject == hitObj)
                             {
                                 listRaycast.Add(castCheck);
                             }
@@ -57,7 +64,7 @@ namespace Packages.PrefabshopEditor
 
                 for (int i = 0; i < listRaycast.Count; i++)
                 {
-                    CreateObject(listRaycast[i], paintSettings.size / 2f);
+                    CreateObject(listRaycast[i], paintSettings.radius);
                 }
             }
         }
@@ -68,8 +75,14 @@ namespace Packages.PrefabshopEditor
 
             GameObject osd = PrefabUtility.InstantiatePrefab(brushInfo.brushObjects[Random.Range(0, brushInfo.brushObjects.Count)]) as GameObject;
             osd.transform.position = newPos;
-            osd.transform.localScale *= Random.Range(paintSettings.randomScaleMin, paintSettings.randomScaleMax);
-            osd.transform.rotation = Random.rotation;
+            if (paintSettings.randomizeScale)
+            {
+                osd.transform.localScale *= Random.Range(paintSettings.randomScaleMin, paintSettings.randomScaleMax);
+            }
+            if (paintSettings.randomizeRotation)
+            {
+                osd.transform.rotation = Random.rotation;
+            }
             osd.transform.up = rayHit.normal;
             switch (paintSettings.toolBar)
             {

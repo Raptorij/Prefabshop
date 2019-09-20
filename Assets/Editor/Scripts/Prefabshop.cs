@@ -66,7 +66,6 @@ namespace Packages.PrefabshopEditor
                             string assetPath = "Assets" + fullPath.Replace(Application.dataPath, "");
                             var bi = ScriptableObjectUtility.CreateAsset<BrushInfo>(assetPath);
                             AssetDatabase.Refresh();
-                            bi.brushObjects = brushObjects;
                             EditorUtility.SetDirty(bi);
                             AssetDatabase.SaveAssets();
                             brushInfoCurrent = bi;
@@ -82,7 +81,6 @@ namespace Packages.PrefabshopEditor
                             string assetPath = "Assets" + fullPath.Replace(Application.dataPath, "");
 
                             brushInfoCurrent = AssetDatabase.LoadAssetAtPath(assetPath, typeof(BrushInfo)) as BrushInfo;
-                            brushObjects = brushInfoCurrent.brushObjects;
                             if (currentBrush != null)
                             {
                                 var brushType = currentBrush.GetType();
@@ -92,10 +90,6 @@ namespace Packages.PrefabshopEditor
                         }
                     }
                     GUI.enabled = brushInfoCurrent != null;
-                    if (GUILayout.Button("Clear Current Brush"))
-                    {
-                        brushObjects.Clear();
-                    }
                 }
                 EditorGUILayout.EndVertical();
             }
@@ -114,7 +108,7 @@ namespace Packages.PrefabshopEditor
             GUI.enabled = brushInfoCurrent != null && brushInfoCurrent.brushObjects.Count > 0;
             Handles.BeginGUI();
             {
-                Rect settingsInfoRect = new Rect(5, 5, 480, EditorGUIUtility.singleLineHeight * 8);
+                Rect settingsInfoRect = new Rect(5, 5, 960, EditorGUIUtility.singleLineHeight * 7);
 
                 GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
                 BrushSettingsView(settingsInfoRect, currentSettings);
@@ -132,6 +126,8 @@ namespace Packages.PrefabshopEditor
                 }
             }
             Handles.EndGUI();
+
+            Tools.hidden = blockToggle;
         }
 
         void DrawBrush(Rect rect, System.Type brushType, bool haveBrush)
@@ -188,66 +184,104 @@ namespace Packages.PrefabshopEditor
 
         void BrushSettingsView(Rect windowRect, PaintSettings settings)
         {
-            var filedsRect = windowRect;
-            filedsRect.height = EditorGUIUtility.singleLineHeight;
-            GUI.Label(filedsRect, "Paint Settings" + (brushInfoCurrent != null ? ": " + brushInfoCurrent.name : ""), new GUIStyle("HelpBox"));
-            filedsRect.width /= 2f;
-            filedsRect.x += 5;
-            filedsRect.y += 5;
+            var fieldsRect = windowRect;
+            fieldsRect.height = EditorGUIUtility.singleLineHeight;
+            GUI.Label(fieldsRect, "Paint Settings" + (brushInfoCurrent != null ? ": " + brushInfoCurrent.name : ""), new GUIStyle("HelpBox"));
+            EditorGUIUtility.fieldWidth = 60;
+            fieldsRect.width = 1020 / 4f;
+            fieldsRect.width -= 60f;
+            fieldsRect.x += 5;
+            fieldsRect.y += 5;
 
-            EditorGUIUtility.labelWidth = 85;
-            filedsRect.y += EditorGUIUtility.singleLineHeight;
-            settings.size = EditorGUI.DelayedFloatField(filedsRect, "Size:", settings.size);
-            settings.size = settings.size >= 0 ? settings.size : 0;
+            EditorGUIUtility.labelWidth = 100;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            settings.radius = EditorGUI.FloatField(fieldsRect, "Radius:", settings.radius);
+            settings.radius = settings.radius >= 0 ? settings.radius : 0;
 
-            filedsRect.y += EditorGUIUtility.singleLineHeight;
-            settings.count = EditorGUI.DelayedIntField(filedsRect, "Object Count:", settings.count);
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            settings.count = EditorGUI.IntField(fieldsRect, "Object Count:", settings.count);
             settings.count = settings.count >= 1 ? settings.count : 1;
 
-            filedsRect.y += EditorGUIUtility.singleLineHeight;
-            settings.gap = EditorGUI.DelayedFloatField(filedsRect, "Gap:", settings.gap);
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            settings.gap = EditorGUI.FloatField(fieldsRect, "Gap:", settings.gap);
 
-            filedsRect.y += EditorGUIUtility.singleLineHeight;
-            filedsRect.width /= 2;
-            settings.randomScaleMin = EditorGUI.FloatField(filedsRect, "Scale Min:", settings.randomScaleMin);
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            settings.targetTag = EditorGUI.TagField(fieldsRect, "Tag:", settings.targetTag);
+
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            settings.targetLayer = EditorGUI.LayerField(fieldsRect, "Layer:", settings.targetLayer);
+
+
+
+            fieldsRect.x += 205;
+            fieldsRect.y = EditorGUIUtility.singleLineHeight + 10;
+            settings.randomizeScale = EditorGUI.Toggle(fieldsRect, "Random Scale:", settings.randomizeScale);
+            GUI.enabled = settings.randomizeScale;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            EditorGUIUtility.labelWidth = 30;
+            fieldsRect.width /= 2f;
+            fieldsRect.width -= 5f;
+            //fieldsRect.width -= 5;
+            settings.randomScaleMin = EditorGUI.FloatField(fieldsRect, "Min:", settings.randomScaleMin);
             settings.randomScaleMin = settings.randomScaleMin >= 0 ? settings.randomScaleMin : 0;
-
-            filedsRect.x += 125;
-            EditorGUIUtility.labelWidth = 70;
-            filedsRect.width -= 5;
-            settings.randomScaleMax = EditorGUI.FloatField(filedsRect, "Max:", settings.randomScaleMax);
+            fieldsRect.x += 120;
+            settings.randomScaleMax = EditorGUI.FloatField(fieldsRect, "Max:", settings.randomScaleMax);
             settings.randomScaleMax = settings.randomScaleMax >= 0 ? settings.randomScaleMax : 0;
+            fieldsRect.width += 5f;
+            settings.randomScaleMax = settings.randomScaleMin > settings.randomScaleMax ? settings.randomScaleMin : settings.randomScaleMax;
+            GUI.enabled = false;
 
-            settings.randomScaleMin = settings.randomScaleMin > settings.randomScaleMax ? settings.randomScaleMax : settings.randomScaleMin;
+            EditorGUIUtility.labelWidth = 120;
+            fieldsRect.width = 240;
+            fieldsRect.x += 105;
+            fieldsRect.y = EditorGUIUtility.singleLineHeight + 10;
+            settings.randomizeRotation = EditorGUI.Toggle(fieldsRect, "Random Rotation:", settings.randomizeRotation);
+            GUI.enabled = settings.randomizeRotation;
+            EditorGUIUtility.labelWidth = 30;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            fieldsRect.y += 5f;
+            GUI.Label(fieldsRect, "Minimum:");
+            fieldsRect.width -= 70;
+            fieldsRect.x += 70;
+            settings.randomRotationMin = EditorGUI.Vector3Field(fieldsRect, "", settings.randomRotationMin);
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            fieldsRect.width += 70;
+            fieldsRect.x -= 70;
+            fieldsRect.y += 5f;
+            GUI.Label(fieldsRect, "Minimum:");
+            fieldsRect.width -= 70;
+            fieldsRect.x += 70;
+            settings.randomRotationMax = EditorGUI.Vector3Field(fieldsRect, "", settings.randomRotationMax);
 
             EditorGUIUtility.labelWidth = 85;
-            filedsRect.x -= 125;
-            filedsRect.width += 5;
-            filedsRect.y += EditorGUIUtility.singleLineHeight;
+            fieldsRect.x -= 70;
+            fieldsRect.width = 140;
+            fieldsRect.y += 5f;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
 
+            GUI.enabled = true;
+            GUI.Label(fieldsRect, "Up Direction:");
+            fieldsRect.x += 80;
+            fieldsRect.width += 45;
+            settings.toolBar = GUI.Toolbar(fieldsRect, settings.toolBar, settings.menuOptions);
 
-            settings.checkObjeck = EditorGUI.Toggle(filedsRect, "Check Object:", settings.checkObjeck);
+            fieldsRect.width = 225;
+            fieldsRect.x += 200;
+            fieldsRect.y = EditorGUIUtility.singleLineHeight + 10;
 
-            filedsRect.y += EditorGUIUtility.singleLineHeight;
-            GUI.Label(filedsRect, "Up Direction:");
-            filedsRect.x += 80;
-            filedsRect.width += 45;
-            settings.toolBar = GUI.Toolbar(filedsRect, settings.toolBar, settings.menuOptions);
+            settings.targetParent = EditorGUI.ObjectField(fieldsRect, "Parent:", settings.targetParent, typeof(Transform), true) as Transform;
 
-            filedsRect.width = 225;
-            filedsRect.x += 245 - 80;
-            filedsRect.y -= EditorGUIUtility.singleLineHeight * 5;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight + 2.5f;
+            EditorGUIUtility.labelWidth = 100;
+            settings.ignoringLayer = LayerMaskField(fieldsRect, "Ignored Layers:", settings.ignoringLayer);
 
-            settings.targetParent = EditorGUI.ObjectField(filedsRect, "Parent:", settings.targetParent, typeof(Transform), true) as Transform;
+            EditorGUIUtility.labelWidth = 120;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight + 2.5f;
+            settings.firstObjectFilter = EditorGUI.Toggle(fieldsRect, "First Object Filter:", settings.firstObjectFilter);
 
-            filedsRect.y += EditorGUIUtility.singleLineHeight + 1;
-            settings.targetTag = EditorGUI.TagField(filedsRect, "Tag:", settings.targetTag);
-
-            filedsRect.y += EditorGUIUtility.singleLineHeight + 1;
-            settings.targetLayer = EditorGUI.LayerField(filedsRect, "Layer:", settings.targetLayer);
-
-            filedsRect.y += EditorGUIUtility.singleLineHeight + 1;
-            settings.ignoringLayer = LayerMaskField(filedsRect, "Ignored Layers:", settings.ignoringLayer);
+            EditorGUIUtility.labelWidth = 85;
+            fieldsRect.y += EditorGUIUtility.singleLineHeight;
+            settings.filterObject = EditorGUI.ObjectField(fieldsRect, "Filter Object:", settings.filterObject, typeof(GameObject), true) as GameObject;
         }
 
         void Shortcuts(PaintSettings settings)
@@ -264,12 +298,28 @@ namespace Packages.PrefabshopEditor
                     }
                     else if (e.control && !e.shift)
                     {
-                        settings.size += (int)Mathf.Sign(e.delta.y);
+                        float delta = e.delta.y;
+                        if (delta % 1 == 0)
+                        {
+                            settings.radius *= delta > 0f ? 1.1f : 0.9f;
+                        }
+                        else
+                        {
+                            settings.radius += delta;
+                        }
                         this.Repaint();
                     }
                     else if (e.shift && e.control)
                     {
-                        settings.gap += Time.unscaledDeltaTime * (int)Mathf.Sign(e.delta.y) * 10f;
+                        float delta = e.delta.y;
+                        if (delta % 1 == 0)
+                        {
+                            settings.gap += Mathf.Sign(delta) *  0.9f;
+                        }
+                        else
+                        {
+                            settings.gap += delta;
+                        }
                         this.Repaint();
                     }
                     if (e.type == EventType.ScrollWheel)
@@ -308,7 +358,6 @@ namespace Packages.PrefabshopEditor
                 {
                     SelectTool(possibleBrushes[i], currentBrush != null);
                     blockToggle = currentBrush != null;
-                    Tools.hidden = blockToggle;
                     if (blockToggle)
                     {
                         Selection.activeGameObject = null;

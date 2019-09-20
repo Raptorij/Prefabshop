@@ -21,6 +21,9 @@ namespace Packages.PrefabshopEditor
         public PaintSettings paintSettings;
         public GameObject targetSpawnObject;
 
+        public float dragDelta;
+
+        private Vector2 previousPosition;
 
         public Brush(BrushInfo info, PaintSettings settings)
         {
@@ -37,9 +40,9 @@ namespace Packages.PrefabshopEditor
             if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
             {
                 Handles.color = paintSettings.placeBrush;
-                Handles.DrawSolidDisc(drawPointHit.point, drawPointHit.normal, paintSettings.size / 2);
+                Handles.DrawSolidDisc(drawPointHit.point, drawPointHit.normal, paintSettings.radius);
                 Handles.color = Color.white;
-                Handles.DrawWireDisc(drawPointHit.point, drawPointHit.normal, paintSettings.size / 2);
+                Handles.DrawWireDisc(drawPointHit.point, drawPointHit.normal, paintSettings.radius);
                 Handles.color = Color.yellow;
                 Handles.DrawLine(drawPointHit.point, drawPointHit.point + drawPointHit.normal * paintSettings.gap);
 
@@ -61,6 +64,16 @@ namespace Packages.PrefabshopEditor
                     if (Event.current.type == EventType.MouseDown)
                     {
                         targetSpawnObject = drawPointHit.collider.gameObject;
+                        previousPosition = mousePosition;
+                    }
+                    else
+                    {
+                        dragDelta = Vector2.Distance(mousePosition, previousPosition) * paintSettings.radius * 12.5f;
+                        previousPosition = mousePosition;
+                        if (dragDelta < 1)
+                        {
+                            return;
+                        }
                     }
                     Paint(drawPointHit);
                 }
