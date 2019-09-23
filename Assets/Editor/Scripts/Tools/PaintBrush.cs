@@ -7,8 +7,12 @@ namespace Packages.PrefabshopEditor
 {
     [BrushKeyCode(KeyCode.B)]
     public class PaintBrush : Brush
-    {
-        public PaintBrush(BrushInfo into, PaintSettings settings) : base(into, settings) { }
+    {      
+        public PaintBrush(BrushInfo into, PaintSettings settings) : base(into, settings)
+        {
+            AddParameter(new Radius());
+            AddParameter(new Count());
+        }
 
         public override void Paint(RaycastHit drawPointHit)
         {

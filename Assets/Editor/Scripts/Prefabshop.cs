@@ -108,12 +108,18 @@ namespace Packages.PrefabshopEditor
             GUI.enabled = brushInfoCurrent != null && brushInfoCurrent.brushObjects.Count > 0;
             Handles.BeginGUI();
             {
-                Rect settingsInfoRect = new Rect(5, 5, 960, EditorGUIUtility.singleLineHeight * 7);
-
+                Rect settingsInfoRect = new Rect(1, 1, 35, 30 * possibleBrushes.Length + 5);
                 GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
-                BrushSettingsView(settingsInfoRect, currentSettings);
 
-                Rect buttonRect = new Rect(5, settingsInfoRect.y + settingsInfoRect.height + 5, 25, 25);
+                Rect parametersRect = new Rect(10, 10, 240, EditorGUIUtility.singleLineHeight);
+
+                if (haveBrush)
+                {
+                    ParametersWindow.Init(currentBrush);
+                }
+                //BrushSettingsView(settingsInfoRect, currentSettings);
+
+                Rect buttonRect = new Rect(5, 5, 25, 25);
 
                 for (int i = 0; i < possibleBrushes.Length; i++)
                 {

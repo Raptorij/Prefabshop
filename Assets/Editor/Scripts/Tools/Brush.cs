@@ -25,18 +25,37 @@ namespace Packages.PrefabshopEditor
 
         private Vector2 previousPosition;
 
+        public List<Parameter> parameters = new List<Parameter>();
+
         public Brush(BrushInfo info, PaintSettings settings)
         {
             brushInfo = info;
             paintSettings = info == null ? settings : brushInfo.settings;
         }
 
+        protected void AddParameter(Parameter parameter)
+        {
+            if (!parameters.Exists(search => search.GetType() ==  parameter.GetType()))
+            {
+                parameters.Add(parameter);
+            }
+        }
+
+        public P GetParameter<P>() where P : Parameter
+        {
+            return parameters.Find(search => search is P) as P;
+        }
+
         public virtual void CastBrush()
         {
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             var drawPointRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            RaycastHit drawPointHit;
+            DrawTool(drawPointRay);
+        }
 
+        public virtual void DrawTool(Ray drawPointRay)
+        {
+            RaycastHit drawPointHit;
             if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
             {
                 Handles.color = paintSettings.placeBrush;
@@ -54,8 +73,7 @@ namespace Packages.PrefabshopEditor
 
                 Handles.BeginGUI();
                 Handles.Label(mousePosition - Vector3.up * 0.05f + Vector3.forward * 0.05f, $"Name:{drawPointHit.collider.gameObject.name}" +
-                                            (drawPointHit.collider.gameObject.transform.parent ?
-                                            $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
+                                            (drawPointHit.collider.gameObject.transform.parent ? $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
                                             $"\nTag: {drawPointHit.collider.gameObject.tag}" +
                                             $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
                 Handles.EndGUI();
