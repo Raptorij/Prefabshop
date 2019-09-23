@@ -1,3 +1,3 @@
 Prefabshop
 
-Preject plan https://trello.com/b/BXGkQKmK/prefabshop
+Project plan https://trello.com/b/BXGkQKmK/prefabshop
