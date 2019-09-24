@@ -5,8 +5,13 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    public abstract class Parameter
+    public abstract class Parameter : IParameter
     {
+        public virtual bool Hidden
+        {
+            get => false;
+        }
+
         public virtual void DrawParameterGUI()
         {
 

@@ -27,9 +27,9 @@ namespace Packages.PrefabshopEditor
         BrushInfo brushInfoCurrent;
 
         Vector2 scroll;
-        private Brush currentBrush;
+        private Tool currentBrush;
         private System.Type[] possibleBrushes;
-        private List<Brush> cachedBrushes = new List<Brush>();
+        private List<Tool> cachedBrushes = new List<Tool>();
 
         private ParametersWindow parametersWindow;
 
@@ -37,7 +37,7 @@ namespace Packages.PrefabshopEditor
         {
             SceneView.duringSceneGui += this.OnSceneGUI;
             var types = Assembly.GetExecutingAssembly().GetTypes();
-            possibleBrushes = (from System.Type type in types where type.IsSubclassOf(typeof(Brush)) select type).ToArray();
+            possibleBrushes = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) select type).ToArray();
             paintSettings = new PaintSettings();
         }
 
@@ -87,7 +87,7 @@ namespace Packages.PrefabshopEditor
                             {
                                 var brushType = currentBrush.GetType();
                                 var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo), typeof(PaintSettings) });
-                                currentBrush = constructor.Invoke(new object[] { brushInfoCurrent, paintSettings }) as Brush;
+                                currentBrush = constructor.Invoke(new object[] { brushInfoCurrent, paintSettings }) as Tool;
                             }
                         }
                     }
@@ -141,7 +141,7 @@ namespace Packages.PrefabshopEditor
             BrushKeyCodeAttribute attribute = brushType.GetCustomAttribute(typeof(BrushKeyCodeAttribute)) as BrushKeyCodeAttribute;
             var brushKey = attribute.keyCode;
             Rect info = new Rect(rect.x + 30, rect.y + 5, rect.width + 80, rect.height);
-            GUI.Label(info, "[" + brushKey.ToString() + "] - " + brushType.Name.Replace("Brush", ""));
+            GUI.Label(info, "[" + brushKey.ToString() + "] - " + brushType.Name.Replace("Tool", ""));
         }
 
         void SelectTool(System.Type brushType, bool haveBrush)
@@ -151,7 +151,7 @@ namespace Packages.PrefabshopEditor
                 if (cachedBrushes.Where(search => search.GetType() == brushType).Count() == 0)
                 {
                     var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo), typeof(PaintSettings) });
-                    currentBrush = constructor.Invoke(new object[] { brushInfoCurrent, paintSettings }) as Brush;
+                    currentBrush = constructor.Invoke(new object[] { brushInfoCurrent, paintSettings }) as Tool;
                     cachedBrushes.Add(currentBrush);
                 }
                 else

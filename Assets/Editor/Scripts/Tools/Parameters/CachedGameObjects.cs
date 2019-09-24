@@ -6,6 +6,11 @@ namespace Packages.PrefabshopEditor
 {
     public class CachedGameObjects : Parameter
     {
+        public override bool Hidden
+        {
+            get => true;
+        }
+
         public List<GameObject> gameObjects = new List<GameObject>();
 
         public void AddToСache(GameObject obj)

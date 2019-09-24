@@ -6,9 +6,9 @@ using UnityEngine;
 namespace Packages.PrefabshopEditor
 {
     [BrushKeyCode(KeyCode.B)]
-    public class PaintBrush : Brush
+    public class PaintTool : Tool
     {      
-        public PaintBrush(BrushInfo into, PaintSettings settings) : base(into, settings)
+        public PaintTool(BrushInfo into, PaintSettings settings) : base(into, settings)
         {
             AddParameter(new Radius());
             AddParameter(new Count());
@@ -68,7 +68,7 @@ namespace Packages.PrefabshopEditor
                                 listRaycast.Add(castCheck);
                             }
                         }
-                        else if (GetParameter<FilterObject>() != null)
+                        else if (GetParameter<FilterObject>().value != null)
                         {
                             if (GetParameter<FilterObject>().value == hitObj)
                             {
@@ -108,23 +108,22 @@ namespace Packages.PrefabshopEditor
                 osd.transform.rotation = Random.rotation;
             }
             osd.transform.up = rayHit.normal;
-            switch (paintSettings.toolBar)
-            {
-                case 0:
-                    osd.transform.up = Vector3.up;
-                    break;
-                case 1:
-                    osd.transform.LookAt(SceneView.lastActiveSceneView.camera.transform.position);
-                    break;
-                case 2:
-                    osd.transform.up = rayHit.normal;
-                    break;
-            }
-
+            //switch (paintSettings.toolBar)
+            //{
+            //    case 0:
+            //        osd.transform.up = Vector3.up;
+            //        break;
+            //    case 1:
+            //        osd.transform.LookAt(SceneView.lastActiveSceneView.camera.transform.position);
+            //        break;
+            //    case 2:
+            //        osd.transform.up = rayHit.normal;
+            //        break;
+            //}
             osd.transform.SetParent(GetParameter<Parent>().value);
             osd.tag = GetParameter<Tag>().value;
             osd.layer = GetParameter<Layer>().value;
-            Undo.RegisterCreatedObjectUndo(osd, "Create Prefab");
+            Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
         }
     }
 }

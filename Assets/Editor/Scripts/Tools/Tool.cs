@@ -15,7 +15,7 @@ namespace Packages.PrefabshopEditor
         }
     }
 
-    public abstract class Brush
+    public abstract class Tool
     {
         public event System.Action<RaycastHit> OnDrawTool;
         public event System.Action OnStartPaint;
@@ -32,7 +32,7 @@ namespace Packages.PrefabshopEditor
 
         public List<Parameter> parameters = new List<Parameter>();
 
-        public Brush(BrushInfo info, PaintSettings settings)
+        public Tool(BrushInfo info, PaintSettings settings)
         {
             brushInfo = info;
             paintSettings = info == null ? settings : brushInfo.settings;

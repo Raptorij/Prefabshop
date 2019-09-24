@@ -15,9 +15,9 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        public Brush currentBrush;
+        public Tool currentBrush;
 
-        public static ParametersWindow Init(Brush brush)
+        public static ParametersWindow Init(Tool brush)
         {
             var window = Instance;
             window.Show();
@@ -30,12 +30,15 @@ namespace Packages.PrefabshopEditor
         {
             if (currentBrush != null)
             {
-                GUILayout.Label(currentBrush.GetType().Name.Replace("Brush", ": Options"), new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
+                GUILayout.Label(currentBrush.GetType().Name.Replace("Tool", ": Options"), new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
                 for (int i = 0; i < currentBrush.parameters.Count; i++)
                 {
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                    currentBrush.parameters[i].DrawParameterGUI();
-                    EditorGUILayout.EndVertical();
+                    if (!currentBrush.parameters[i].Hidden)
+                    {
+                        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                        currentBrush.parameters[i].DrawParameterGUI();
+                        EditorGUILayout.EndVertical();
+                    }
                 }
             }
             else

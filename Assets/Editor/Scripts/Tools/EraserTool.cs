@@ -8,9 +8,9 @@ using System;
 namespace Packages.PrefabshopEditor
 {
     [BrushKeyCode(KeyCode.C)]
-    public class EraserBrush : Brush
+    public class EraserTool : Tool
     {
-        public EraserBrush(BrushInfo into, PaintSettings settings) : base(into, settings)
+        public EraserTool(BrushInfo into, PaintSettings settings) : base(into, settings)
         {
             AddParameter(new Radius());
             AddParameter(new Tag());
