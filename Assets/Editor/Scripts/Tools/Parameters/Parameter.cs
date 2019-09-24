@@ -7,7 +7,12 @@ namespace Packages.PrefabshopEditor
 {
     public abstract class Parameter
     {
-        public virtual void DrawParameter()
+        public virtual void DrawParameterGUI()
+        {
+
+        }
+
+        public virtual void DrawTool(RaycastHit raycastHit)
         {
 
         }

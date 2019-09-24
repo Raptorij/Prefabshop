@@ -1,18 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class FilterObject : MonoBehaviour
+namespace Packages.PrefabshopEditor
 {
-    // Start is called before the first frame update
-    void Start()
+    public class FilterObject : Parameter
     {
-        
-    }
+        public GameObject value;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public override void DrawParameterGUI()
+        {
+            base.DrawParameterGUI();
+            value = EditorGUILayout.ObjectField(this.GetType().Name, value, typeof(GameObject), true) as GameObject;
+        }
     }
 }

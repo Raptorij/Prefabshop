@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    public class Parent : Parameter
+    public class IgnoreSpawnedPrefabs : Parameter
     {
-        public Transform value;
+        public bool value;
 
         public override void DrawParameterGUI()
         {
             base.DrawParameterGUI();
-            value = EditorGUILayout.ObjectField(this.GetType().Name, value, typeof(Transform), true) as Transform;
+            value = EditorGUILayout.Toggle(this.GetType().Name, value);
         }
     }
 }

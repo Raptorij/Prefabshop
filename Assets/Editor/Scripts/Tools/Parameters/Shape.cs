@@ -9,7 +9,7 @@ namespace Packages.PrefabshopEditor
     {
         public Texture2D texture;
 
-        public override void DrawParameter()
+        public override void DrawParameterGUI()
         {
             texture = EditorGUILayout.ObjectField(this.GetType().Name, texture, typeof(Texture2D), false) as Texture2D;
         }

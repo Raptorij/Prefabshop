@@ -17,6 +17,11 @@ namespace Packages.PrefabshopEditor
 
     public abstract class Brush
     {
+        public event System.Action<RaycastHit> OnDrawTool;
+        public event System.Action OnStartPaint;
+        public event System.Action OnPaint;
+        public event System.Action OnEndPaint;
+
         public BrushInfo brushInfo;
         public PaintSettings paintSettings;
         public GameObject targetSpawnObject;
@@ -33,12 +38,14 @@ namespace Packages.PrefabshopEditor
             paintSettings = info == null ? settings : brushInfo.settings;
         }
 
-        protected void AddParameter(Parameter parameter)
+        protected Parameter AddParameter(Parameter parameter)
         {
             if (!parameters.Exists(search => search.GetType() ==  parameter.GetType()))
             {
                 parameters.Add(parameter);
+                return parameter;
             }
+            return null;
         }
 
         public P GetParameter<P>() where P : Parameter
@@ -56,47 +63,37 @@ namespace Packages.PrefabshopEditor
         public virtual void DrawTool(Ray drawPointRay)
         {
             RaycastHit drawPointHit;
-            if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
+            if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
             {
-                Handles.color = paintSettings.placeBrush;
-                Handles.DrawSolidDisc(drawPointHit.point, drawPointHit.normal, paintSettings.radius);
-                Handles.color = Color.white;
-                Handles.DrawWireDisc(drawPointHit.point, drawPointHit.normal, paintSettings.radius);
-                Handles.color = Color.yellow;
-                Handles.DrawLine(drawPointHit.point, drawPointHit.point + drawPointHit.normal * paintSettings.gap);
-
-                Handles.color = Color.white;
-
-                Vector3 mousePosition = Event.current.mousePosition;
-                var ray = HandleUtility.GUIPointToWorldRay(mousePosition);
-                mousePosition = ray.origin;
+                DrawHandle(drawPointHit);
+                var mouseRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
 
                 Handles.BeginGUI();
-                Handles.Label(mousePosition - Vector3.up * 0.05f + Vector3.forward * 0.05f, $"Name:{drawPointHit.collider.gameObject.name}" +
+                Handles.Label(mouseRay.origin - Vector3.up * 0.05f + Vector3.forward * 0.05f, $"Name:{drawPointHit.collider.gameObject.name}" +
                                             (drawPointHit.collider.gameObject.transform.parent ? $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
                                             $"\nTag: {drawPointHit.collider.gameObject.tag}" +
                                             $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
                 Handles.EndGUI();
+
                 if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
                 {
                     if (Event.current.type == EventType.MouseDown)
                     {
                         targetSpawnObject = drawPointHit.collider.gameObject;
-                        previousPosition = mousePosition;
-                    }
-                    else
-                    {
-                        dragDelta = Vector2.Distance(mousePosition, previousPosition) * paintSettings.radius * 12.5f;
-                        previousPosition = mousePosition;
-                        if (dragDelta < 1)
-                        {
-                            return;
-                        }
                     }
                     Paint(drawPointHit);
                 }
+                if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
+                {
+                    OnEndPaint?.Invoke();
+                }
                 SceneView.RepaintAll();
             }
+        }
+
+        public virtual void DrawHandle(RaycastHit drawPointHit)
+        {
+
         }
 
         public virtual void Paint(RaycastHit drawPointHit)

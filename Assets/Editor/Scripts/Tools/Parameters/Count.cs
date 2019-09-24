@@ -9,9 +9,9 @@ namespace Packages.PrefabshopEditor
     {
         public int value = 1;
 
-        public override void DrawParameter()
+        public override void DrawParameterGUI()
         {
-            base.DrawParameter();
+            base.DrawParameterGUI();
             value = EditorGUILayout.IntField(this.GetType().Name, value);
         }
     }

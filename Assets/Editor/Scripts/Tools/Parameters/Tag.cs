@@ -1,18 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class Tag : MonoBehaviour
+namespace Packages.PrefabshopEditor
 {
-    // Start is called before the first frame update
-    void Start()
+    public class Tag : Parameter
     {
-        
-    }
+        public string value = "Untagged";
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public override void DrawParameterGUI()
+        {
+            base.DrawParameterGUI();
+            value = EditorGUILayout.TagField(this.GetType().Name, value);
+        }
     }
 }

@@ -1,18 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class FirstObjectFilter : MonoBehaviour
+namespace Packages.PrefabshopEditor
 {
-    // Start is called before the first frame update
-    void Start()
+    public class FirstObjectFilter : Parameter
     {
-        
-    }
+        public bool value;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public override void DrawParameterGUI()
+        {
+            base.DrawParameterGUI();
+            value = EditorGUILayout.Toggle(this.GetType().Name, value);
+        }
     }
 }

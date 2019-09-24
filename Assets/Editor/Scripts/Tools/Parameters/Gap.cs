@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    public class Parent : Parameter
+    public class Gap : Parameter
     {
-        public Transform value;
+        public float value = 0f;
 
         public override void DrawParameterGUI()
         {
             base.DrawParameterGUI();
-            value = EditorGUILayout.ObjectField(this.GetType().Name, value, typeof(Transform), true) as Transform;
+            value = EditorGUILayout.FloatField(this.GetType().Name, value);
         }
     }
 }

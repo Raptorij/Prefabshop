@@ -12,6 +12,26 @@ namespace Packages.PrefabshopEditor
         {
             AddParameter(new Radius());
             AddParameter(new Count());
+            AddParameter(new Gap());
+            AddParameter(new Tag());
+            AddParameter(new Layer());
+            AddParameter(new Parent());
+            AddParameter(new Scale());
+            AddParameter(new FirstObjectFilter());
+            AddParameter(new FilterObject());
+            AddParameter(new IgnoringLayer());
+            //AddParameter(new IgnoreSpawnedPrefabs());
+        }
+
+        public override void DrawHandle(RaycastHit raycastHit)
+        {
+            Handles.color = new Color(0, 1, 0, 0.1f);
+            Handles.DrawSolidDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+            Handles.color = Color.white;
+            Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+            Handles.color = Color.yellow;
+            Handles.DrawLine(raycastHit.point, raycastHit.point + raycastHit.normal * GetParameter<Gap>().value);
+            Handles.color = Color.white;
         }
 
         public override void Paint(RaycastHit drawPointHit)
@@ -21,24 +41,24 @@ namespace Packages.PrefabshopEditor
             var mp = Event.current.mousePosition;
             var castRay = HandleUtility.GUIPointToWorldRay(mp);
             RaycastHit cast;
-            if (Physics.Raycast(castRay, out cast, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
+            if (Physics.Raycast(castRay, out cast, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
             {
                 List<RaycastHit> listRaycast = new List<RaycastHit>();
 
                 var perpendicularX = Vector3.Cross(cast.normal, cast.normal.Y(cast.normal.x + Random.value, cast.normal.z + Random.value)).normalized;
                 var perpendicularY = Vector3.Cross(cast.normal, perpendicularX).normalized;
 
-                int whileBreaker = paintSettings.count * 4;
+                int whileBreaker = GetParameter<Count>().value * 4;
                 do
                 {
                     whileBreaker--;
-                    var randomSeed = Random.insideUnitCircle * paintSettings.radius;
+                    var randomSeed = Random.insideUnitCircle * GetParameter<Radius>().value;
                     var random = perpendicularX * randomSeed.x + perpendicularY * randomSeed.y;
 
                     Ray rayRandom = new Ray(castRay.origin, cast.point + random - castRay.origin);
                     RaycastHit castCheck;
 
-                    if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(paintSettings.ignoringLayer)))
+                    if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                     {
                         var hitObj = castCheck.collider.gameObject;
                         if (paintSettings.firstObjectFilter)
@@ -64,18 +84,18 @@ namespace Packages.PrefabshopEditor
                     {
                         break;
                     }
-                } while (listRaycast.Count < paintSettings.count);
+                } while (listRaycast.Count < GetParameter<Count>().value);
 
                 for (int i = 0; i < listRaycast.Count; i++)
                 {
-                    CreateObject(listRaycast[i], paintSettings.radius);
+                    CreateObject(listRaycast[i]);
                 }
             }
         }
 
-        void CreateObject(RaycastHit rayHit, float radius)
+        void CreateObject(RaycastHit rayHit)
         {
-            var newPos = rayHit.point + rayHit.normal.normalized * paintSettings.gap;
+            var newPos = rayHit.point + rayHit.normal.normalized * GetParameter<Gap>().value;
 
             GameObject osd = PrefabUtility.InstantiatePrefab(brushInfo.brushObjects[Random.Range(0, brushInfo.brushObjects.Count)]) as GameObject;
             osd.transform.position = newPos;
@@ -103,8 +123,8 @@ namespace Packages.PrefabshopEditor
 
 
             osd.transform.SetParent(paintSettings.targetParent);
-            osd.tag = paintSettings.targetTag;
-            osd.layer = paintSettings.targetLayer;
+            osd.tag = GetParameter<Tag>().value;
+            osd.layer = GetParameter<Layer>().value;
             Undo.RegisterCreatedObjectUndo(osd, "Create Prefab");
         }
     }

@@ -17,22 +17,30 @@ namespace Packages.PrefabshopEditor
 
         public Brush currentBrush;
 
-        public static void Init(Brush brush)
+        public static ParametersWindow Init(Brush brush)
         {
-            GetWindow<ParametersWindow>(brush.GetType().Name, false).Show();
+            var window = Instance;
+            window.Show();
             Instance.currentBrush = brush;
-            Instance.name = brush.GetType().Name;
             GetWindow<SceneView>().Focus();
+            return window;
         }
 
         private void OnGUI()
         {
             if (currentBrush != null)
             {
+                GUILayout.Label(currentBrush.GetType().Name.Replace("Brush", ": Options"), new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
                 for (int i = 0; i < currentBrush.parameters.Count; i++)
                 {
-                    currentBrush.parameters[i].DrawParameter();
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    currentBrush.parameters[i].DrawParameterGUI();
+                    EditorGUILayout.EndVertical();
                 }
+            }
+            else
+            {
+                GUILayout.Label("Tool isn't selected", new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
             }
         }
     }

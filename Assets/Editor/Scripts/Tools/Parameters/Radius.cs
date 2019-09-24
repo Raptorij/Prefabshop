@@ -9,9 +9,9 @@ namespace Packages.PrefabshopEditor
     {
         public float value = 10f;
 
-        public override void DrawParameter()
+        public override void DrawParameterGUI()
         {
-            base.DrawParameter();
+            base.DrawParameterGUI();
             value = EditorGUILayout.FloatField(this.GetType().Name, value);
         }
     }
