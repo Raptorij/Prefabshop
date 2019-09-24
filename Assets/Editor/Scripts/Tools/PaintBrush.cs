@@ -61,16 +61,16 @@ namespace Packages.PrefabshopEditor
                     if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                     {
                         var hitObj = castCheck.collider.gameObject;
-                        if (paintSettings.firstObjectFilter)
+                        if (GetParameter<FirstObjectFilter>().value)
                         {
                             if (targetSpawnObject == hitObj)
                             {
                                 listRaycast.Add(castCheck);
                             }
                         }
-                        else if (paintSettings.filterObject != null)
+                        else if (GetParameter<FilterObject>() != null)
                         {
-                            if (paintSettings.filterObject == hitObj)
+                            if (GetParameter<FilterObject>().value == hitObj)
                             {
                                 listRaycast.Add(castCheck);
                             }
@@ -99,9 +99,9 @@ namespace Packages.PrefabshopEditor
 
             GameObject osd = PrefabUtility.InstantiatePrefab(brushInfo.brushObjects[Random.Range(0, brushInfo.brushObjects.Count)]) as GameObject;
             osd.transform.position = newPos;
-            if (paintSettings.randomizeScale)
+            if (GetParameter<Scale>().randomScale)
             {
-                osd.transform.localScale *= Random.Range(paintSettings.randomScaleMin, paintSettings.randomScaleMax);
+                osd.transform.localScale *= Random.Range(GetParameter<Scale>().minValue, GetParameter<Scale>().maxValue);
             }
             if (paintSettings.randomizeRotation)
             {
@@ -121,8 +121,7 @@ namespace Packages.PrefabshopEditor
                     break;
             }
 
-
-            osd.transform.SetParent(paintSettings.targetParent);
+            osd.transform.SetParent(GetParameter<Parent>().value);
             osd.tag = GetParameter<Tag>().value;
             osd.layer = GetParameter<Layer>().value;
             Undo.RegisterCreatedObjectUndo(osd, "Create Prefab");
