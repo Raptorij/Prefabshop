@@ -25,7 +25,7 @@ namespace Packages.PrefabshopEditor
         BrushInfo brushInfoCurrent;
 
         Vector2 scroll;
-        private Tool currentBrush;
+        private Tool currentTool;
         private System.Type[] possibleBrushes;
         private List<Tool> cachedBrushes = new List<Tool>();
 
@@ -68,6 +68,7 @@ namespace Packages.PrefabshopEditor
                             EditorUtility.SetDirty(bi);
                             AssetDatabase.SaveAssets();
                             brushInfoCurrent = bi;
+                            GetWindow<SceneView>().Focus();
                         }
                     }
                     GUI.enabled = true;
@@ -80,10 +81,11 @@ namespace Packages.PrefabshopEditor
                             string assetPath = "Assets" + fullPath.Replace(Application.dataPath, "");
 
                             brushInfoCurrent = AssetDatabase.LoadAssetAtPath(assetPath, typeof(BrushInfo)) as BrushInfo;
-                            if (currentBrush != null)
+                            if (currentTool != null)
                             {
-                                SelectTool(currentBrush.GetType(), true);
+                                SelectTool(currentTool.GetType(), true);
                             }
+                            GetWindow<SceneView>().Focus();
                         }
                     }
                     GUI.enabled = brushInfoCurrent != null;
@@ -96,10 +98,10 @@ namespace Packages.PrefabshopEditor
         void OnSceneGUI(SceneView sceneView)
         {
             Shortcuts();
-            bool haveBrush = blockToggle = currentBrush != null;
+            bool haveBrush = blockToggle = currentTool != null;
             if (haveBrush)
             {
-                currentBrush.CastBrush();
+                currentTool.CastBrush();
             }
             GUI.enabled = brushInfoCurrent != null && brushInfoCurrent.brushObjects.Count > 0;
             Handles.BeginGUI();
@@ -110,9 +112,9 @@ namespace Packages.PrefabshopEditor
                 Rect buttonRect = new Rect(5, 5, 25, 25);
                 for (int i = 0; i < possibleBrushes.Length; i++)
                 {
-                    DrawBrush(buttonRect, possibleBrushes[i], haveBrush);
+                    DrawToolGUI(buttonRect, possibleBrushes[i], haveBrush);
                     buttonRect.y += 30;
-                    if (haveBrush && currentBrush == null)
+                    if (haveBrush && currentTool == null)
                     {
                         break;
                     }
@@ -122,9 +124,9 @@ namespace Packages.PrefabshopEditor
             Tools.hidden = blockToggle;
         }
 
-        void DrawBrush(Rect rect, System.Type brushType, bool haveBrush)
+        void DrawToolGUI(Rect rect, System.Type brushType, bool haveBrush)
         {
-            GUI.backgroundColor = (haveBrush && (currentBrush.GetType() == brushType)) ? Color.gray : Color.white;
+            GUI.backgroundColor = (haveBrush && (currentTool.GetType() == brushType)) ? Color.gray : Color.white;
             Texture2D brushIcon = Resources.Load(brushType.Name) as Texture2D;
             GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
             if (GUI.Button(rect, brushIcon))
@@ -143,23 +145,24 @@ namespace Packages.PrefabshopEditor
 
         void SelectTool(System.Type brushType, bool haveBrush)
         {
-            if (!haveBrush || !(currentBrush.GetType() == brushType))
+            if (!haveBrush || !(currentTool.GetType() == brushType))
             {                
                 if (cachedBrushes.Where(search => search.GetType() == brushType).Count() == 0)
                 {
                     var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo) });
-                    currentBrush = constructor.Invoke(new object[] { brushInfoCurrent }) as Tool;
-                    cachedBrushes.Add(currentBrush);
+                    currentTool = constructor.Invoke(new object[] { brushInfoCurrent }) as Tool;
+                    cachedBrushes.Add(currentTool);
                 }
                 else
                 {
-                    currentBrush = cachedBrushes.Find(search => search.GetType() == brushType);
+                    currentTool = cachedBrushes.Find(search => search.GetType() == brushType);
+                    currentTool.brushInfo = brushInfoCurrent;
                 }
-                ParametersWindow.Init(currentBrush);
+                ParametersWindow.Init(currentTool);
             }
             else
             {
-                currentBrush = null;
+                currentTool = null;
                 haveBrush = false;
                 return;
             }
@@ -270,8 +273,8 @@ namespace Packages.PrefabshopEditor
                 var brushKey = attribute.keyCode;
                 if (e.keyCode == brushKey)
                 {
-                    SelectTool(possibleBrushes[i], currentBrush != null);
-                    blockToggle = currentBrush != null;
+                    SelectTool(possibleBrushes[i], currentTool != null);
+                    blockToggle = currentTool != null;
                     if (blockToggle)
                     {
                         Selection.activeGameObject = null;
