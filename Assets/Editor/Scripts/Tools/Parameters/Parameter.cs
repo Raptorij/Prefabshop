@@ -12,6 +12,16 @@ namespace Packages.PrefabshopEditor
             get => false;
         }
 
+        private bool enable = true;
+
+        public virtual bool Enable
+        {
+            get => enable;
+            set => enable = value;
+        }
+
+        public System.Action OnValueChange;
+
         public virtual void DrawParameterGUI()
         {
 

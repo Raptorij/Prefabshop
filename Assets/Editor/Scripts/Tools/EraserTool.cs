@@ -10,7 +10,7 @@ namespace Packages.PrefabshopEditor
     [BrushKeyCode(KeyCode.C)]
     public class EraserTool : Tool
     {
-        public EraserTool(BrushInfo into, PaintSettings settings) : base(into, settings)
+        public EraserTool(BrushInfo into) : base(into)
         {
             AddParameter(new Radius());
             AddParameter(new Tag());
@@ -20,8 +20,10 @@ namespace Packages.PrefabshopEditor
             OnEndPaint += EndPaint;
         }
 
-        public override void DrawHandle(RaycastHit raycastHit)
+        public override void DrawHandle(Ray ray)
         {
+            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+            var raycastHit = casts[casts.Length - 1];
             Handles.color = new Color(1, 0, 0, 0.25f);
             Handles.SphereHandleCap(0,raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
             Handles.color = Color.white;
@@ -60,7 +62,7 @@ namespace Packages.PrefabshopEditor
             onlyPrefabs.Clear();
         }
 
-        private void EndPaint()
+        private void EndPaint(RaycastHit raycastHit)
         {
             EditorApplication.update += RemoveCechedObjects;
         }

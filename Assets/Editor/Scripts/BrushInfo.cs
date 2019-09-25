@@ -8,6 +8,5 @@ namespace Packages.PrefabshopEditor
     public class BrushInfo : ScriptableObject
     {
         public List<GameObject> brushObjects = new List<GameObject>();
-        public PaintSettings settings;
     }
 }

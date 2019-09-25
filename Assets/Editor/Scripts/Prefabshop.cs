@@ -14,9 +14,7 @@ namespace Packages.PrefabshopEditor
         static void Init()
         {
             EditorWindow.GetWindow<Prefabshop>().Show();
-        }
-
-        PaintSettings paintSettings;
+        }        
 
         private bool workWithOnlyBrushObjects;
 
@@ -38,7 +36,6 @@ namespace Packages.PrefabshopEditor
             SceneView.duringSceneGui += this.OnSceneGUI;
             var types = Assembly.GetExecutingAssembly().GetTypes();
             possibleBrushes = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) select type).ToArray();
-            paintSettings = new PaintSettings();
         }
 
         void OnDisable()
@@ -85,9 +82,7 @@ namespace Packages.PrefabshopEditor
                             brushInfoCurrent = AssetDatabase.LoadAssetAtPath(assetPath, typeof(BrushInfo)) as BrushInfo;
                             if (currentBrush != null)
                             {
-                                var brushType = currentBrush.GetType();
-                                var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo), typeof(PaintSettings) });
-                                currentBrush = constructor.Invoke(new object[] { brushInfoCurrent, paintSettings }) as Tool;
+                                SelectTool(currentBrush.GetType(), true);
                             }
                         }
                     }
@@ -100,8 +95,7 @@ namespace Packages.PrefabshopEditor
 
         void OnSceneGUI(SceneView sceneView)
         {
-            var currentSettings = brushInfoCurrent != null ? brushInfoCurrent.settings : paintSettings;
-            Shortcuts(currentSettings);
+            Shortcuts();
             bool haveBrush = blockToggle = currentBrush != null;
             if (haveBrush)
             {
@@ -132,6 +126,7 @@ namespace Packages.PrefabshopEditor
         {
             GUI.backgroundColor = (haveBrush && (currentBrush.GetType() == brushType)) ? Color.gray : Color.white;
             Texture2D brushIcon = Resources.Load(brushType.Name) as Texture2D;
+            GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
             if (GUI.Button(rect, brushIcon))
             {
                 SelectTool(brushType, haveBrush);
@@ -141,7 +136,9 @@ namespace Packages.PrefabshopEditor
             BrushKeyCodeAttribute attribute = brushType.GetCustomAttribute(typeof(BrushKeyCodeAttribute)) as BrushKeyCodeAttribute;
             var brushKey = attribute.keyCode;
             Rect info = new Rect(rect.x + 30, rect.y + 5, rect.width + 80, rect.height);
-            GUI.Label(info, "[" + brushKey.ToString() + "] - " + brushType.Name.Replace("Tool", ""));
+            GUI.contentColor = Color.black;
+            GUI.Label(info, "[" + brushKey.ToString() + "] - " + brushType.Name.Replace("Tool", ""), new GUIStyle("MiniBoldLabel"));
+            GUI.contentColor = Color.white;
         }
 
         void SelectTool(System.Type brushType, bool haveBrush)
@@ -150,8 +147,8 @@ namespace Packages.PrefabshopEditor
             {                
                 if (cachedBrushes.Where(search => search.GetType() == brushType).Count() == 0)
                 {
-                    var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo), typeof(PaintSettings) });
-                    currentBrush = constructor.Invoke(new object[] { brushInfoCurrent, paintSettings }) as Tool;
+                    var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo) });
+                    currentBrush = constructor.Invoke(new object[] { brushInfoCurrent }) as Tool;
                     cachedBrushes.Add(currentBrush);
                 }
                 else
@@ -189,19 +186,19 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        void BrushSettingsView(Rect windowRect, PaintSettings settings)
+        void BrushSettingsView(Rect windowRect)
         {
             var fieldsRect = windowRect;            
 
-            settings.randomizeRotation = EditorGUI.Toggle(fieldsRect, "Random Rotation:", settings.randomizeRotation);
-            settings.randomRotationMin = EditorGUI.Vector3Field(fieldsRect, "", settings.randomRotationMin);
-            settings.randomRotationMax = EditorGUI.Vector3Field(fieldsRect, "", settings.randomRotationMax);            
+            //settings.randomizeRotation = EditorGUI.Toggle(fieldsRect, "Random Rotation:", settings.randomizeRotation);
+            //settings.randomRotationMin = EditorGUI.Vector3Field(fieldsRect, "", settings.randomRotationMin);
+            //settings.randomRotationMax = EditorGUI.Vector3Field(fieldsRect, "", settings.randomRotationMax);            
             
-            settings.toolBar = GUI.Toolbar(fieldsRect, settings.toolBar, settings.menuOptions);
+            //settings.toolBar = GUI.Toolbar(fieldsRect, settings.toolBar, settings.menuOptions);
 
         }
 
-        void Shortcuts(PaintSettings settings)
+        void Shortcuts()
         {
             var e = Event.current;
             //if (blockToggle)

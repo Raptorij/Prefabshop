@@ -18,12 +18,11 @@ namespace Packages.PrefabshopEditor
     public abstract class Tool
     {
         public event System.Action<RaycastHit> OnDrawTool;
-        public event System.Action OnStartPaint;
-        public event System.Action OnPaint;
-        public event System.Action OnEndPaint;
+        public event System.Action<RaycastHit> OnStartPaint;
+        public event System.Action<RaycastHit> OnPaint;
+        public event System.Action<RaycastHit> OnEndPaint;
 
         public BrushInfo brushInfo;
-        public PaintSettings paintSettings;
         public GameObject targetSpawnObject;
 
         public float dragDelta;
@@ -32,10 +31,9 @@ namespace Packages.PrefabshopEditor
 
         public List<Parameter> parameters = new List<Parameter>();
 
-        public Tool(BrushInfo info, PaintSettings settings)
+        public Tool(BrushInfo info)
         {
             brushInfo = info;
-            paintSettings = info == null ? settings : brushInfo.settings;
         }
 
         protected Parameter AddParameter(Parameter parameter)
@@ -65,7 +63,7 @@ namespace Packages.PrefabshopEditor
             RaycastHit drawPointHit;
             if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
             {
-                DrawHandle(drawPointHit);
+                DrawHandle(drawPointRay);
                 var mouseRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
 
                 Handles.BeginGUI();
@@ -80,25 +78,26 @@ namespace Packages.PrefabshopEditor
                     if (Event.current.type == EventType.MouseDown)
                     {
                         targetSpawnObject = drawPointHit.collider.gameObject;
+                        OnStartPaint?.Invoke(drawPointHit);
                     }
                     Paint(drawPointHit);
                 }
                 if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
                 {
-                    OnEndPaint?.Invoke();
+                    OnEndPaint?.Invoke(drawPointHit);
                 }
                 SceneView.RepaintAll();
             }
         }
 
-        public virtual void DrawHandle(RaycastHit drawPointHit)
+        public virtual void DrawHandle(Ray drawPointHit)
         {
 
         }
 
         public virtual void Paint(RaycastHit drawPointHit)
         {
-
+            OnPaint?.Invoke(drawPointHit);
         }
     }
 }

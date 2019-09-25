@@ -10,5 +10,11 @@ namespace Packages.PrefabshopEditor
         {
             get;
         }
+
+        bool Enable
+        {
+            get;
+            set;
+        }
     }
 }

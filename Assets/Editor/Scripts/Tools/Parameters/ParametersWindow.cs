@@ -35,9 +35,11 @@ namespace Packages.PrefabshopEditor
                 {
                     if (!currentBrush.parameters[i].Hidden)
                     {
+                        GUI.enabled = currentBrush.parameters[i].Enable;
                         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                         currentBrush.parameters[i].DrawParameterGUI();
                         EditorGUILayout.EndVertical();
+                        GUI.enabled = true;
                     }
                 }
             }
