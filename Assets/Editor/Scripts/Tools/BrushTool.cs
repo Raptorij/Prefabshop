@@ -7,9 +7,13 @@ namespace Packages.PrefabshopEditor
 {
     [BrushKeyCode(KeyCode.B)]
     public class BrushTool : Tool
-    {      
+    {
+        public Mesh shape;
+        public Texture2D previousTexture;
+
         public BrushTool(BrushInfo into) : base(into)
         {
+            AddParameter(new Shape());
             AddParameter(new Radius());
             AddParameter(new Count());
             AddParameter(new Gap());
@@ -35,13 +39,43 @@ namespace Packages.PrefabshopEditor
                     break;
                 }
             }
-            Handles.color = new Color(0, 1, 0, 0.1f);
-            Handles.DrawSolidDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
-            Handles.color = Color.white;
-            Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
-            Handles.color = Color.yellow;
-            Handles.DrawLine(raycastHit.point, raycastHit.point + raycastHit.normal * GetParameter<Gap>().value);
-            Handles.color = Color.white;
+            //Handles.color = new Color(0, 1, 0, 0.1f);
+            //Handles.DrawSolidDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+            //Handles.color = Color.white;
+            //Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+            //Handles.color = Color.yellow;
+            //Handles.DrawLine(raycastHit.point, raycastHit.point + raycastHit.normal * GetParameter<Gap>().value);
+            //Handles.color = Color.white;
+
+            if (GetParameter<Shape>().texture != null)
+            {
+                if (shape == null || previousTexture != GetParameter<Shape>().texture)
+                {                    
+                    var t = GetParameter<Shape>().texture;
+                    previousTexture = t;
+                    var textureMap = new int[t.width, t.height];
+                    for (int i = 0; i < textureMap.GetLength(0); i++)
+                    {
+                        for (int j = 0; j < textureMap.GetLength(1); j++)
+                        {
+                            if (GetParameter<Shape>().invert)
+                            {
+                                textureMap[i, j] = t.GetPixel(i, j).r >= .6f ? 0 : 1;
+                            }
+                            else
+                            {
+                                textureMap[i, j] = t.GetPixel(i, j).r >= .6f ? 1 : 0;
+                            }
+                        }
+                    }
+                    MarchingSquares ms = new MarchingSquares();
+                    shape = ms.GenerateMesh(textureMap, 0.01f * GetParameter<Radius>().value);
+                }
+                else
+                {
+                    Graphics.DrawMesh(shape, raycastHit.point, Quaternion.identity, new Material(Shader.Find("Specular")), 0);
+                }
+            }
         }
 
         public override void Paint(RaycastHit drawPointHit)

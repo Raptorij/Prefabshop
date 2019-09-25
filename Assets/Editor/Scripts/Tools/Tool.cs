@@ -17,6 +17,7 @@ namespace Packages.PrefabshopEditor
 
     public abstract class Tool
     {
+        public event System.Action OnSelectTool;
         public event System.Action<RaycastHit> OnDrawTool;
         public event System.Action<RaycastHit> OnStartPaint;
         public event System.Action<RaycastHit> OnPaint;
@@ -34,6 +35,7 @@ namespace Packages.PrefabshopEditor
         public Tool(BrushInfo info)
         {
             brushInfo = info;
+            OnSelectTool?.Invoke();
         }
 
         protected Parameter AddParameter(Parameter parameter)
