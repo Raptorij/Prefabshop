@@ -7,13 +7,46 @@ namespace Packages.PrefabshopEditor
 {
     public class Shape : Parameter
     {
-        public Texture2D texture;
-        public bool invert;
+        private Texture2D texture;
+        public Texture2D Texture
+        {
+            get
+            {
+                return texture;
+            }
+            set
+            {
+                if (texture != value)
+                {
+                    OnTextureChange?.Invoke();
+                    texture = value;
+                }
+            }
+        }
+
+        private bool invert;
+        public bool Invert
+        {
+            get
+            {
+                return invert;
+            }
+            set
+            {
+                if (invert != value)
+                {
+                    OnValueChange?.Invoke();
+                    invert = value;
+                }
+            }
+        }
+
+        public System.Action OnTextureChange;
 
         public override void DrawParameterGUI()
         {
-            texture = EditorGUILayout.ObjectField(this.GetType().Name, texture, typeof(Texture2D), false) as Texture2D;
-            invert = EditorGUILayout.Toggle("Invetr:", invert);
+            Texture = EditorGUILayout.ObjectField(this.GetType().Name, Texture, typeof(Texture2D), false) as Texture2D;
+            Invert = EditorGUILayout.Toggle("Invetr:", Invert);
         }
     }
 }

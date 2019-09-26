@@ -25,6 +25,10 @@ namespace Packages.PrefabshopEditor
             AddParameter(new FilterObject());
             AddParameter(new IgnoringLayer());
             //AddParameter(new IgnoreSpawnedPrefabs());
+
+            GetParameter<Shape>().OnTextureChange += ResetShape;
+            GetParameter<Shape>().OnValueChange += ResetShape;
+
         }
 
         public override void DrawHandle(Ray ray)
@@ -39,26 +43,18 @@ namespace Packages.PrefabshopEditor
                     break;
                 }
             }
-            //Handles.color = new Color(0, 1, 0, 0.1f);
-            //Handles.DrawSolidDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
-            //Handles.color = Color.white;
-            //Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
-            //Handles.color = Color.yellow;
-            //Handles.DrawLine(raycastHit.point, raycastHit.point + raycastHit.normal * GetParameter<Gap>().value);
-            //Handles.color = Color.white;
-
-            if (GetParameter<Shape>().texture != null)
+            if (GetParameter<Shape>().Texture != null)
             {
-                if (shape == null || previousTexture != GetParameter<Shape>().texture)
-                {                    
-                    var t = GetParameter<Shape>().texture;
+                if (shape == null || previousTexture != GetParameter<Shape>().Texture)
+                {
+                    var t = GetParameter<Shape>().Texture;
                     previousTexture = t;
                     var textureMap = new int[t.width, t.height];
                     for (int i = 0; i < textureMap.GetLength(0); i++)
                     {
                         for (int j = 0; j < textureMap.GetLength(1); j++)
                         {
-                            if (GetParameter<Shape>().invert)
+                            if (GetParameter<Shape>().Invert)
                             {
                                 textureMap[i, j] = t.GetPixel(i, j).r >= .6f ? 0 : 1;
                             }
@@ -70,12 +66,38 @@ namespace Packages.PrefabshopEditor
                     }
                     MarchingSquares ms = new MarchingSquares();
                     shape = ms.GenerateMesh(textureMap, 0.01f * GetParameter<Radius>().value);
+                    System.GC.Collect();
+                    System.GC.WaitForPendingFinalizers();
                 }
                 else
                 {
-                    Graphics.DrawMesh(shape, raycastHit.point, Quaternion.identity, new Material(Shader.Find("Specular")), 0);
+                    Material mat = new Material(Shader.Find("Legacy Shaders/Transparent/Diffuse"));
+                    mat.color = new Color(0, 1, 0, 0.1f);
+                    //mat.SetFloat("_Mode", 3.0f);
+
+                    var position = raycastHit.point + raycastHit.normal * 0.5f;
+                    var rotation = Quaternion.identity;
+                    var scale = Vector3.one * GetParameter<Radius>().value * 0.05f;
+
+                    Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, scale);
+                    Graphics.DrawMesh(shape, matrix, mat, 0);
                 }
             }
+            else
+            {
+                Handles.color = new Color(0, 1, 0, 0.1f);
+                Handles.DrawSolidDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+                Handles.color = Color.white;
+                Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+                Handles.color = Color.yellow;
+                Handles.DrawLine(raycastHit.point, raycastHit.point + raycastHit.normal * GetParameter<Gap>().value);
+                Handles.color = Color.white;
+            }
+        }        
+
+        void ResetShape()
+        {
+            shape = null;
         }
 
         public override void Paint(RaycastHit drawPointHit)
@@ -103,7 +125,9 @@ namespace Packages.PrefabshopEditor
                         var randomSeed = Random.insideUnitCircle * GetParameter<Radius>().value;
                         var random = perpendicularX * randomSeed.x + perpendicularY * randomSeed.y;
 
-                        Ray rayRandom = new Ray(castRay.origin, cast.point + random - castRay.origin);
+                        var position = shape == null ? cast.point + random : shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.05f + cast.point;
+
+                        Ray rayRandom = new Ray(castRay.origin, position - castRay.origin);
                         RaycastHit castCheck;
 
                         if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
