@@ -45,7 +45,7 @@ namespace Packages.PrefabshopEditor
 
         public override void DrawHandle(Ray ray)
         {
-            targetSpawnObject = GetParameter<FirstObjectFilter>().value ? targetSpawnObject : null;
+            //targetSpawnObject = GetParameter<FirstObjectFilter>().value ? targetSpawnObject : null;
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
             var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)
@@ -81,14 +81,6 @@ namespace Packages.PrefabshopEditor
                     System.GC.Collect();
                     System.GC.WaitForPendingFinalizers();
                 }
-                else
-                {
-                    Material mat = new Material(Shader.Find("Legacy Shaders/Transparent/Diffuse"));
-                    mat.color = new Color(0, 1, 0, 0.1f);
-                    //mat.SetFloat("_Mode", 3.0f);
-                    //Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, scale);
-                    //Graphics.DrawMesh(shape, matrix, mat, 0);
-                }
             }
             else
             {
@@ -111,7 +103,7 @@ namespace Packages.PrefabshopEditor
                 var position = raycastHit.point;
                 var rotation = Quaternion.identity;
                 rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
-                rotation *= Quaternion.Euler(Vector3.up * GetParameter<Gap>().value);
+                //rotation *= Quaternion.Euler(Vector3.up);
                 var scale = Vector3.one * GetParameter<Radius>().value * 0.05f;
                 Gizmos.DrawMesh(shape, position, rotation, scale);
                 //Gizmos.color = Color.white;

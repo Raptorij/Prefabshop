@@ -39,7 +39,6 @@ namespace Packages.PrefabshopEditor
                 DestroyImmediate(gizmosDrawer);
             }
             gizmosDrawer = new GameObject().AddComponent<GizmosDrawer>();
-            gizmosDrawer.gameObject.hideFlags = HideFlags.HideInHierarchy;
             gizmosDrawer.tag = "EditorOnly";
         }
 
