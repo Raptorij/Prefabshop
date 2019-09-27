@@ -18,6 +18,7 @@ namespace Packages.PrefabshopEditor
     public abstract class Tool
     {
         public event System.Action OnSelectTool;
+        public event System.Action OnDeselectTool;
         public event System.Action<RaycastHit> OnDrawTool;
         public event System.Action<RaycastHit> OnStartPaint;
         public event System.Action<RaycastHit> OnPaint;
@@ -35,7 +36,6 @@ namespace Packages.PrefabshopEditor
         public Tool(BrushInfo info)
         {
             brushInfo = info;
-            OnSelectTool?.Invoke();
         }
 
         protected Parameter AddParameter(Parameter parameter)
@@ -51,6 +51,16 @@ namespace Packages.PrefabshopEditor
         public P GetParameter<P>() where P : Parameter
         {
             return parameters.Find(search => search is P) as P;
+        }
+
+        public virtual void SelectTool()
+        {
+            OnSelectTool?.Invoke();
+        }
+
+        public virtual void DeselectTool()
+        {
+            OnDeselectTool?.Invoke();
         }
 
         public virtual void CastBrush()

@@ -14,11 +14,7 @@ namespace Packages.PrefabshopEditor
         static void Init()
         {
             EditorWindow.GetWindow<Prefabshop>().Show();
-        }        
-
-        private bool workWithOnlyBrushObjects;
-
-        public List<GameObject> brushObjects = new List<GameObject>();
+        }                
 
         bool blockToggle;
 
@@ -26,8 +22,8 @@ namespace Packages.PrefabshopEditor
 
         Vector2 scroll;
         private Tool currentTool;
-        private System.Type[] possibleBrushes;
-        private List<Tool> cachedBrushes = new List<Tool>();
+        private System.Type[] possibleTools;
+        private List<Tool> cachedTools = new List<Tool>();
 
         private ParametersWindow parametersWindow;
 
@@ -35,13 +31,23 @@ namespace Packages.PrefabshopEditor
         {
             SceneView.duringSceneGui += this.OnSceneGUI;
             var types = Assembly.GetExecutingAssembly().GetTypes();
-            possibleBrushes = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) select type).ToArray();
+            possibleTools = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) && type != typeof(SmudgeTool) select type).ToArray();
+
+            var gizmosDrawer = FindObjectOfType<GizmosDrawer>();
+            if (gizmosDrawer != null)
+            {
+                DestroyImmediate(gizmosDrawer);
+            }
+            gizmosDrawer = new GameObject().AddComponent<GizmosDrawer>();
+            gizmosDrawer.gameObject.hideFlags = HideFlags.HideInHierarchy;
+            gizmosDrawer.tag = "EditorOnly";
         }
 
         void OnDisable()
         {
             SceneView.duringSceneGui -= this.OnSceneGUI;
-        }
+            DestroyImmediate(FindObjectOfType<GizmosDrawer>().gameObject);
+        }        
 
         private void OnGUI()
         {
@@ -99,20 +105,16 @@ namespace Packages.PrefabshopEditor
         {
             Shortcuts();
             bool haveBrush = blockToggle = currentTool != null;
-            if (haveBrush)
-            {
-                currentTool.CastBrush();
-            }
             GUI.enabled = brushInfoCurrent != null && brushInfoCurrent.brushObjects.Count > 0;
             Handles.BeginGUI();
             {
-                Rect settingsInfoRect = new Rect(1, 1, 35, 30 * possibleBrushes.Length + 5);
+                Rect settingsInfoRect = new Rect(1, 1, 35, 30 * possibleTools.Length + 5);
                 GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
 
                 Rect buttonRect = new Rect(5, 5, 25, 25);
-                for (int i = 0; i < possibleBrushes.Length; i++)
+                for (int i = 0; i < possibleTools.Length; i++)
                 {
-                    DrawToolGUI(buttonRect, possibleBrushes[i], haveBrush);
+                    DrawToolGUI(buttonRect, possibleTools[i], haveBrush);
                     buttonRect.y += 30;
                     if (haveBrush && currentTool == null)
                     {
@@ -121,6 +123,7 @@ namespace Packages.PrefabshopEditor
                 }
             }
             Handles.EndGUI();
+            currentTool?.CastBrush();
             Tools.hidden = blockToggle;
         }
 
@@ -132,6 +135,7 @@ namespace Packages.PrefabshopEditor
             if (GUI.Button(rect, brushIcon))
             {
                 SelectTool(brushType, haveBrush);
+                Event.current.Use();
             }
             GUI.backgroundColor = Color.white;
 
@@ -146,22 +150,28 @@ namespace Packages.PrefabshopEditor
         void SelectTool(System.Type brushType, bool haveBrush)
         {
             if (!haveBrush || !(currentTool.GetType() == brushType))
-            {                
-                if (cachedBrushes.Where(search => search.GetType() == brushType).Count() == 0)
+            {
+                if (haveBrush)
+                {
+                    currentTool.DeselectTool();
+                }
+                if (cachedTools.Where(search => search.GetType() == brushType).Count() == 0)
                 {
                     var constructor = brushType.GetConstructor(new System.Type[] { typeof(BrushInfo) });
                     currentTool = constructor.Invoke(new object[] { brushInfoCurrent }) as Tool;
-                    cachedBrushes.Add(currentTool);
+                    cachedTools.Add(currentTool);                    
                 }
                 else
                 {
-                    currentTool = cachedBrushes.Find(search => search.GetType() == brushType);
-                    currentTool.brushInfo = brushInfoCurrent;
+                    currentTool = cachedTools.Find(search => search.GetType() == brushType);
+                    currentTool.brushInfo = brushInfoCurrent;                    
                 }
+                currentTool.SelectTool();
                 ParametersWindow.Init(currentTool);
             }
             else
             {
+                currentTool.DeselectTool();
                 currentTool = null;
                 haveBrush = false;
                 return;
@@ -204,76 +214,17 @@ namespace Packages.PrefabshopEditor
         void Shortcuts()
         {
             var e = Event.current;
-            //if (blockToggle)
-            //{
-            //    if (e.delta.y != 0 && e.isScrollWheel && (e.shift || e.control))
-            //    {
-            //        if (e.shift && !e.control)
-            //        {
-            //            settings.count += (int)Mathf.Sign(e.delta.y);
-            //            this.Repaint();
-            //        }
-            //        else if (e.control && !e.shift)
-            //        {
-            //            float delta = e.delta.y;
-            //            if (delta % 1 == 0)
-            //            {
-            //                settings.radius *= delta > 0f ? 1.1f : 0.9f;
-            //            }
-            //            else
-            //            {
-            //                settings.radius += delta;
-            //            }
-            //            this.Repaint();
-            //        }
-            //        else if (e.shift && e.control)
-            //        {
-            //            float delta = e.delta.y;
-            //            if (delta % 1 == 0)
-            //            {
-            //                settings.gap += Mathf.Sign(delta) *  0.9f;
-            //            }
-            //            else
-            //            {
-            //                settings.gap += delta;
-            //            }
-            //            this.Repaint();
-            //        }
-            //        if (e.type == EventType.ScrollWheel)
-            //        {
-            //            e.Use();
-            //        }
-            //    }
-
-            //    if (e.type != EventType.KeyDown)
-            //    {
-            //        return;
-            //    }
-
-            //    if (e.character == '\t')
-            //    {
-            //        settings.toolBar++;
-            //        if (settings.toolBar > settings.menuOptions.Length - 1)
-            //        {
-            //            settings.toolBar = 0;
-            //        }
-            //        e.Use();
-            //        this.Repaint();
-            //    }
-            //}
-
             if (e.type != EventType.KeyDown)
             {
                 return;
             }
-
-            for (int i = 0; i < possibleBrushes.Length; i++)
+            for (int i = 0; i < possibleTools.Length; i++)
             {
-                BrushKeyCodeAttribute attribute = possibleBrushes[i].GetCustomAttribute(typeof(BrushKeyCodeAttribute)) as BrushKeyCodeAttribute;
+                BrushKeyCodeAttribute attribute = possibleTools[i].GetCustomAttribute(typeof(BrushKeyCodeAttribute)) as BrushKeyCodeAttribute;
                 var brushKey = attribute.keyCode;
                 if (e.keyCode == brushKey)
                 {
-                    SelectTool(possibleBrushes[i], currentTool != null);
+                    SelectTool(possibleTools[i], currentTool != null);
                     blockToggle = currentTool != null;
                     if (blockToggle)
                     {

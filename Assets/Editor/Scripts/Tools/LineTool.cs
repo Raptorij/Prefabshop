@@ -10,6 +10,8 @@ namespace Packages.PrefabshopEditor
     {
         public Vector3 startPoint;
         public Vector3 endPoint;
+        public Vector3 startPointHandle;
+        public Vector3 endPointHandle;
         public bool isDraw;
 
         public LineTool(BrushInfo info) : base(info)
@@ -30,7 +32,8 @@ namespace Packages.PrefabshopEditor
 
         void StartPaint(RaycastHit drawPointHit)
         {
-            startPoint = drawPointHit.point;
+            startPointHandle = drawPointHit.point;
+            startPoint = Camera.current.WorldToScreenPoint(drawPointHit.point);
             isDraw = true;
         }
 
@@ -49,21 +52,22 @@ namespace Packages.PrefabshopEditor
                 targetCastsPoint.Add(LerpByDistance(startPoint, endPoint, (float)i / GetParameter<Count>().value));
             }
 
-            var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             List<RaycastHit> listRaycast = new List<RaycastHit>();
 
             int whileBreaker = GetParameter<Count>().value * 4;
+            var currentCamera = Camera.current;
             for (int i = 0; i < GetParameter<Count>().value; i++)
             {
+                var castRay = currentCamera.ScreenPointToRay(targetCastsPoint[i]);
                 whileBreaker--;
-                Ray rayRandom = new Ray(castRay.origin, targetCastsPoint[i] - castRay.origin);
+                //Ray ray = new Ray(castRay.origin, targetCastsPoint[i] - castRay.origin);
                 RaycastHit castCheck;
-
-                if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
+                
+                if (Physics.Raycast(castRay, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                 {
                     if (!CheckCast(castCheck))
                     {
-                        return;
+                        continue;
                     }
                     listRaycast.Add(castCheck);
                 }
@@ -83,18 +87,21 @@ namespace Packages.PrefabshopEditor
         {
             base.DrawHandle(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+            var closest = Mathf.Infinity;
+            var currentCamera = Camera.current;
             for (int k = 0; k < casts.Length; k++)
             {
-                if (CheckCast(casts[k]))
+                if (casts[k].distance < closest && CheckCast(casts[k]))
                 {
-                    endPoint = casts[k].point;
-                    break;
+                    closest = casts[k].distance;
+                    endPointHandle = casts[k].point;
+                    endPoint = Camera.current.WorldToScreenPoint(casts[k].point);
                 }
             }
             if (casts.Length > 0 && isDraw)
             {
                 Handles.color = new Color(0, 1, 0, 1f);
-                Handles.DrawLine(startPoint, endPoint);
+                Handles.DrawLine(startPointHandle, endPointHandle);
             }
         }
 

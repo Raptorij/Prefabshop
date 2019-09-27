@@ -10,6 +10,7 @@ namespace Packages.PrefabshopEditor
     {
         public Mesh shape;
         public Texture2D previousTexture;
+        public RaycastHit raycastHit;
 
         public BrushTool(BrushInfo into) : base(into)
         {
@@ -28,19 +29,32 @@ namespace Packages.PrefabshopEditor
 
             GetParameter<Shape>().OnTextureChange += ResetShape;
             GetParameter<Shape>().OnValueChange += ResetShape;
+        }
 
+        public override void SelectTool()
+        {
+            GameObject.FindObjectOfType<GizmosDrawer>().onDrawGizmos += DrawShape;
+            base.SelectTool();
+        }
+
+        public override void DeselectTool()
+        {
+            GameObject.FindObjectOfType<GizmosDrawer>().onDrawGizmos -= DrawShape;
+            base.DeselectTool();
         }
 
         public override void DrawHandle(Ray ray)
         {
+            targetSpawnObject = GetParameter<FirstObjectFilter>().value ? targetSpawnObject : null;
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
-            var raycastHit = casts[0];
+            var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)
             {
-                if (CheckCast(casts[k]))
+                var cast = casts[k];
+                if (cast.distance < closest)
                 {
-                    raycastHit = casts[k];
-                    break;
+                    closest = cast.distance;
+                    raycastHit = cast;
                 }
             }
             if (GetParameter<Shape>().Texture != null)
@@ -50,18 +64,16 @@ namespace Packages.PrefabshopEditor
                     var t = GetParameter<Shape>().Texture;
                     previousTexture = t;
                     var textureMap = new int[t.width, t.height];
+
+                    int invert = GetParameter<Shape>().Invert ? 0 : 1;
+
+                    var pixels = t.GetPixels();
+
                     for (int i = 0; i < textureMap.GetLength(0); i++)
                     {
                         for (int j = 0; j < textureMap.GetLength(1); j++)
                         {
-                            if (GetParameter<Shape>().Invert)
-                            {
-                                textureMap[i, j] = t.GetPixel(i, j).r >= .6f ? 0 : 1;
-                            }
-                            else
-                            {
-                                textureMap[i, j] = t.GetPixel(i, j).r >= .6f ? 1 : 0;
-                            }
+                            textureMap[i, j] = pixels[i + j * t.width].r >= .6f ? invert : 1 - invert;
                         }
                     }
                     MarchingSquares ms = new MarchingSquares();
@@ -74,13 +86,8 @@ namespace Packages.PrefabshopEditor
                     Material mat = new Material(Shader.Find("Legacy Shaders/Transparent/Diffuse"));
                     mat.color = new Color(0, 1, 0, 0.1f);
                     //mat.SetFloat("_Mode", 3.0f);
-
-                    var position = raycastHit.point + raycastHit.normal * 0.5f;
-                    var rotation = Quaternion.identity;
-                    var scale = Vector3.one * GetParameter<Radius>().value * 0.05f;
-
-                    Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, scale);
-                    Graphics.DrawMesh(shape, matrix, mat, 0);
+                    //Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, scale);
+                    //Graphics.DrawMesh(shape, matrix, mat, 0);
                 }
             }
             else
@@ -93,7 +100,24 @@ namespace Packages.PrefabshopEditor
                 Handles.DrawLine(raycastHit.point, raycastHit.point + raycastHit.normal * GetParameter<Gap>().value);
                 Handles.color = Color.white;
             }
-        }        
+        }
+
+        void DrawShape()
+        {
+            if (shape != null)
+            {
+                Gizmos.color = new Color(0, 1, 0, 0.1f);
+
+                var position = raycastHit.point;
+                var rotation = Quaternion.identity;
+                rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
+                rotation *= Quaternion.Euler(Vector3.up * GetParameter<Gap>().value);
+                var scale = Vector3.one * GetParameter<Radius>().value * 0.05f;
+                Gizmos.DrawMesh(shape, position, rotation, scale);
+                //Gizmos.color = Color.white;
+                Gizmos.DrawWireMesh(shape, position, rotation, scale);
+            }
+        }
 
         void ResetShape()
         {
@@ -103,7 +127,7 @@ namespace Packages.PrefabshopEditor
         public override void Paint(RaycastHit drawPointHit)
         {
             base.Paint(drawPointHit);
-            
+
             var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             var casts = Physics.RaycastAll(castRay, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
 
@@ -134,7 +158,7 @@ namespace Packages.PrefabshopEditor
                         {
                             if (!CheckCast(castCheck))
                             {
-                                return;
+                                break;
                             }
                             listRaycast.Add(castCheck);
                         }
@@ -216,5 +240,5 @@ namespace Packages.PrefabshopEditor
                 return true;
             }
         }
-    }    
+    }
 }
