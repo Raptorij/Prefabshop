@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using static EdgeHelpers;
 
 namespace Packages.PrefabshopEditor
 {
@@ -16,6 +17,7 @@ namespace Packages.PrefabshopEditor
         {
             AddParameter(new Shape());
             AddParameter(new Radius());
+            AddParameter(new Outer());
             AddParameter(new Count());
             AddParameter(new Gap());
             AddParameter(new Tag());
@@ -140,8 +142,17 @@ namespace Packages.PrefabshopEditor
                         whileBreaker--;
                         var randomSeed = Random.insideUnitCircle * GetParameter<Radius>().value;
                         var random = perpendicularX * randomSeed.x + perpendicularY * randomSeed.y;
+                        var circlePos = cast.point + (GetParameter<Outer>().value ? Vector3.zero : random);
 
-                        var position = shape == null ? cast.point + random : shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.05f + cast.point;
+                        var shapePosInside = shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.05f + cast.point;
+
+                        var vertices = shape.vertices;
+                        var boundaryPath = GetEdges(shape.triangles).FindBoundary().SortEdges();
+                        var shapePosOuter = vertices[boundaryPath[Random.Range(0,boundaryPath.Count)].v1];
+
+                        var shapePos = (GetParameter<Outer>().value ? shapePosOuter : shapePosInside);
+
+                        var position = (shape == null ?  circlePos : shapePos);
 
                         Ray rayRandom = new Ray(castRay.origin, position - castRay.origin);
                         RaycastHit castCheck;
