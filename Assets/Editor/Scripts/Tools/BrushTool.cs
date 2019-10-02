@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using static EdgeHelpers;
 
 namespace Packages.PrefabshopEditor
 {
@@ -10,6 +9,7 @@ namespace Packages.PrefabshopEditor
     public class BrushTool : Tool
     {
         public Mesh shape;
+        public Mesh shapeOutline;
         public Texture2D previousTexture;
         public RaycastHit raycastHit;
 
@@ -80,6 +80,7 @@ namespace Packages.PrefabshopEditor
                     }
                     MarchingSquares ms = new MarchingSquares();
                     shape = ms.GenerateMesh(textureMap, 0.01f * GetParameter<Radius>().value);
+                    shapeOutline = ms.CreateMeshOutline();
                     System.GC.Collect();
                     System.GC.WaitForPendingFinalizers();
                 }
@@ -100,16 +101,21 @@ namespace Packages.PrefabshopEditor
         {
             if (shape != null)
             {
-                Gizmos.color = new Color(0, 1, 0, 0.1f);
+                Gizmos.color = new Color(0, 1, 0, 0.2f);
 
                 var position = raycastHit.point;
                 var rotation = Quaternion.identity;
                 rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
                 //rotation *= Quaternion.Euler(Vector3.up);
                 var scale = Vector3.one * GetParameter<Radius>().value * 0.05f;
-                Gizmos.DrawMesh(shape, position, rotation, scale);
-                //Gizmos.color = Color.white;
-                Gizmos.DrawWireMesh(shape, position, rotation, scale);
+                Gizmos.DrawMesh(shape, position + raycastHit.normal * 0.1f, rotation, scale);
+                for (int i = 0; i < shapeOutline.vertices.Length - 1; i++)
+                {
+                    var outlinePos = position + shapeOutline.vertices[i] * GetParameter<Radius>().value * .05f;
+                    var outlinePosEnd = position + shapeOutline.vertices[i + 1] * GetParameter<Radius>().value * .05f;
+                    Gizmos.color = Color.white;
+                    Gizmos.DrawLine(outlinePos, outlinePosEnd);
+                }
             }
         }
 
@@ -146,11 +152,9 @@ namespace Packages.PrefabshopEditor
 
                         var shapePosInside = shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.05f + cast.point;
 
-                        var vertices = shape.vertices;
-                        var boundaryPath = GetEdges(shape.triangles).FindBoundary().SortEdges();
-                        var shapePosOuter = vertices[boundaryPath[Random.Range(0,boundaryPath.Count)].v1];
+                        var shapePosOuter = shapeOutline.vertices[Random.Range(0, shapeOutline.vertices.Length)] * GetParameter<Radius>().value * .05f;
 
-                        var shapePos = (GetParameter<Outer>().value ? shapePosOuter : shapePosInside);
+                        var shapePos = (GetParameter<Outer>().value ? shapePosOuter * GetParameter<Radius>().value * 0.1f + cast.point : shapePosInside);
 
                         var position = (shape == null ?  circlePos : shapePos);
 

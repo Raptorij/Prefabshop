@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class MarchingSquares
 {
-
     public SquareGrid squareGrid;
     public MeshFilter walls;
     public MeshFilter cave;
@@ -15,7 +14,7 @@ public class MarchingSquares
     List<int> triangles;
 
     Dictionary<int, List<Triangle>> triangleDictionary = new Dictionary<int, List<Triangle>>();
-    List<List<int>> outlines = new List<List<int>>();
+    public List<List<int>> outlines = new List<List<int>>();
     HashSet<int> checkedVertices = new HashSet<int>();
 
     public Mesh GenerateMesh(int[,] map, float squareSize)
@@ -51,6 +50,25 @@ public class MarchingSquares
         }
         mesh.uv = uvs;
         return mesh;
+    }
+
+    public Mesh CreateMeshOutline()
+    {
+        CalculateMeshOutlines();
+
+        List<Vector3> wallVertices = new List<Vector3>();
+        Mesh wallMesh = new Mesh();
+        foreach (var outline in outlines)
+        {
+            for (int i = 0; i < outline.Count - 1; i++)
+            {
+                int startIndex = wallVertices.Count;
+                wallVertices.Add(vertices[outline[i]]);
+                wallVertices.Add(vertices[outline[i + 1]]);
+            }
+        }
+        wallMesh.vertices = wallVertices.ToArray();
+        return wallMesh;
     }
 
     void TriangulateSquare(Square square)
@@ -259,7 +277,7 @@ public class MarchingSquares
         return -1;
     }
 
-    bool IsOutlineEdge(int vertexA, int vertexB)
+    public bool IsOutlineEdge(int vertexA, int vertexB)
     {
         var trianglesContainingVertexA = triangleDictionary[vertexA];
         int sharedTriangleCount = 0;
@@ -278,7 +296,7 @@ public class MarchingSquares
         return sharedTriangleCount == 1;
     }
 
-    struct Triangle
+    public struct Triangle
     {
         public int vertexIndexA;
         public int vertexIndexB;
