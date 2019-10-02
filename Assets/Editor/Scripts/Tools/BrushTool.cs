@@ -35,7 +35,17 @@ namespace Packages.PrefabshopEditor
 
         public override void SelectTool()
         {
-            GameObject.FindObjectOfType<GizmosDrawer>().onDrawGizmos += DrawShape;
+            var gizmosDrawer = GameObject.FindObjectOfType<GizmosDrawer>();
+            if (gizmosDrawer)
+            {
+                gizmosDrawer.onDrawGizmos += DrawShape;
+            }
+            else
+            {
+                gizmosDrawer = new GameObject().AddComponent<GizmosDrawer>();
+                gizmosDrawer.tag = "EditorOnly";
+                gizmosDrawer.onDrawGizmos += DrawShape;
+            }
             base.SelectTool();
         }
 
@@ -146,13 +156,19 @@ namespace Packages.PrefabshopEditor
                     do
                     {
                         whileBreaker--;
-                        var randomSeed = Random.insideUnitCircle * GetParameter<Radius>().value;
+                        var randomSeed = (GetParameter<Outer>().value ? Vector2.one : Random.insideUnitCircle ) * GetParameter<Radius>().value;
                         var random = perpendicularX * randomSeed.x + perpendicularY * randomSeed.y;
-                        var circlePos = cast.point + (GetParameter<Outer>().value ? Vector3.zero : random);
+                        var circlePos = cast.point + random;
 
-                        var shapePosInside = shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.05f + cast.point;
+                        var shapePosInside = Vector3.zero;
+                        var shapePosOuter = Vector3.zero;
 
-                        var shapePosOuter = shapeOutline.vertices[Random.Range(0, shapeOutline.vertices.Length)] * GetParameter<Radius>().value * .05f;
+                        if (shape)
+                        {
+                            shapePosInside = shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.05f + cast.point;
+                            shapePosOuter = shapeOutline.vertices[Random.Range(0, shapeOutline.vertices.Length)] * GetParameter<Radius>().value * .05f;
+                        }
+
 
                         var shapePos = (GetParameter<Outer>().value ? shapePosOuter * GetParameter<Radius>().value * 0.1f + cast.point : shapePosInside);
 
