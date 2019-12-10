@@ -25,7 +25,6 @@ namespace Packages.PrefabshopEditor
             AddParameter(new FirstObjectFilter());
             AddParameter(new FilterObject());
             AddParameter(new IgnoringLayer());
-            //AddParameter(new IgnoreSpawnedPrefabs());
 
             GetParameter<Shape>().OnTextureChange += ResetShape;
             GetParameter<Shape>().OnValueChange += ResetShape;
@@ -33,19 +32,16 @@ namespace Packages.PrefabshopEditor
 
         public override void SelectTool()
         {
-            GameObject.FindObjectOfType<GizmosDrawer>().onDrawGizmos += DrawShape;
             base.SelectTool();
         }
 
         public override void DeselectTool()
         {
-            GameObject.FindObjectOfType<GizmosDrawer>().onDrawGizmos -= DrawShape;
             base.DeselectTool();
         }
 
         public override void DrawHandle(Ray ray)
         {
-            //targetSpawnObject = GetParameter<FirstObjectFilter>().value ? targetSpawnObject : null;
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
             var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)
@@ -81,6 +77,10 @@ namespace Packages.PrefabshopEditor
                     System.GC.Collect();
                     System.GC.WaitForPendingFinalizers();
                 }
+                else
+                {
+                    DrawShape();
+                }
             }
             else
             {
@@ -98,16 +98,18 @@ namespace Packages.PrefabshopEditor
         {
             if (shape != null)
             {
-                Gizmos.color = new Color(0, 1, 0, 0.1f);
-
                 var position = raycastHit.point;
                 var rotation = Quaternion.identity;
                 rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
-                //rotation *= Quaternion.Euler(Vector3.up);
-                var scale = Vector3.one * GetParameter<Radius>().value * 0.05f;
-                Gizmos.DrawMesh(shape, position, rotation, scale);
-                //Gizmos.color = Color.white;
-                Gizmos.DrawWireMesh(shape, position, rotation, scale);
+                var scale = Vector3.one * GetParameter<Radius>().value * 0.075f;
+
+
+                var matrix = new Matrix4x4();
+                matrix.SetTRS(position, rotation, scale);
+                var mat = new Material(Shader.Find("Raptorij/BrushShape"));
+                mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                mat.SetPass(0);
+                Graphics.DrawMeshNow(shape, matrix, 0);
             }
         }
 
