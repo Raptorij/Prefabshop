@@ -16,6 +16,7 @@ namespace Packages.PrefabshopEditor
         }
 
         public Tool currentBrush;
+        private Vector2 scrollView;
 
         public static ParametersWindow Init(Tool brush)
         {
@@ -31,17 +32,21 @@ namespace Packages.PrefabshopEditor
             if (currentBrush != null)
             {
                 GUILayout.Label(currentBrush.GetType().Name.Replace("Tool", ": Options"), new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
-                for (int i = 0; i < currentBrush.parameters.Count; i++)
+                scrollView = EditorGUILayout.BeginScrollView(scrollView);
                 {
-                    if (!currentBrush.parameters[i].Hidden)
+                    for (int i = 0; i < currentBrush.parameters.Count; i++)
                     {
-                        GUI.enabled = currentBrush.parameters[i].Enable;
-                        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                        currentBrush.parameters[i].DrawParameterGUI();
-                        EditorGUILayout.EndVertical();
-                        GUI.enabled = true;
+                        if (!currentBrush.parameters[i].Hidden)
+                        {
+                            GUI.enabled = currentBrush.parameters[i].Enable;
+                            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                            currentBrush.parameters[i].DrawParameterGUI();
+                            EditorGUILayout.EndVertical();
+                            GUI.enabled = true;
+                        }
                     }
                 }
+                EditorGUILayout.EndScrollView();
             }
             else
             {
