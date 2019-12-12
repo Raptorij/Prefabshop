@@ -8,7 +8,8 @@ namespace Packages.PrefabshopEditor
     [BrushKeyCode(KeyCode.M)]
     public class MagicWandTool : Tool
     {
-        public RaycastHit raycastHit;
+        System.Action onReplace;
+        GameObject underMouse;
 
         public MagicWandTool(BrushInfo into) : base(into)
         {
@@ -21,19 +22,54 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Parent());
             AddParameter(new IgnoringLayer());
             AddParameter(new ListOfObjects());
-            AddParameter(new PrefabSelector(true, "Replace", ReplacePrefabs));
+            AddParameter(new PrefabSelector(true, "Replace", onReplace));
             GetParameter<PrefabSelector>().buttonName = "Replace";
         }
 
         public override void SelectTool()
         {
             base.SelectTool();
+            underMouse = null;
+            onReplace += ReplacePrefabs;
         }
 
         public override void DeselectTool()
         {
-            GetParameter<PrefabSelector>().onButtonClick = null;
+            onReplace -= ReplacePrefabs;
+            underMouse = null;
             base.DeselectTool();
+        }
+
+        public override void DrawHandle(Ray drawPointHit)
+        {
+            base.DrawHandle(drawPointHit);
+
+            if (Event.current.type == EventType.MouseMove)
+            {
+                underMouse = HandleUtility.PickGameObject(Event.current.mousePosition, false);
+            }
+            if (underMouse != null)
+            {
+                if (PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse) != null)
+                {
+                    underMouse = PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse);
+                    var shape = underMouse.GetComponentsInChildren<MeshFilter>();
+                    var mat = new Material(Shader.Find("Raptorij/BrushShape"));
+                    mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                    mat.SetPass(0);
+                    for (int i = 0; i < shape.Length; i++)
+                    {
+                        var position = shape[i].transform.position;
+                        var rotation = shape[i].transform.rotation;
+                        var scale = shape[i].transform.lossyScale;
+
+
+                        var matrix = new Matrix4x4();
+                        matrix.SetTRS(position, rotation, scale);
+                        Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
+                    }
+                }
+            }
         }
 
         public override void Paint(RaycastHit drawPointHit)
@@ -41,14 +77,13 @@ namespace Packages.PrefabshopEditor
             base.Paint(drawPointHit);
 
             var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            RaycastHit raycast;
-            Physics.Raycast(castRay, out raycast,Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
-            SelectPrefabs(raycast);
+            var go = HandleUtility.PickGameObject(Event.current.mousePosition, false);
+            SelectPrefabs(go);
         }
 
-        private void SelectPrefabs(RaycastHit raycastHit)
+        private void SelectPrefabs(GameObject objectUnderMouse)
         {
-            GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(raycastHit.collider.gameObject) as GameObject;
+            GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(objectUnderMouse) as GameObject;
             var listOfPrefabs = FindAllPrefabInstances(prefabAsset);
             GetParameter<ListOfObjects>().savedList = listOfPrefabs;
             Selection.objects = listOfPrefabs.ToArray();
@@ -78,18 +113,18 @@ namespace Packages.PrefabshopEditor
             Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
         }
 
-        List<GameObject> FindAllPrefabInstances(UnityEngine.Object myPrefab)
+        List<GameObject> FindAllPrefabInstances(Object myPrefab)
         {
             List<GameObject> result = new List<GameObject>();
-            GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
-            foreach (GameObject GO in allObjects)
+            var allObjects = GameObject.FindObjectsOfType<GameObject>();
+            foreach (var GO in allObjects)
             {
-                if (EditorUtility.GetPrefabType(GO) == PrefabType.PrefabInstance)
+                if (PrefabUtility.GetOutermostPrefabInstanceRoot(GO) != null)
                 {
-                    UnityEngine.Object GO_prefab = EditorUtility.GetPrefabParent(GO);
+                    var GO_prefab = PrefabUtility.GetCorrespondingObjectFromSource(GO);
                     if (myPrefab == GO_prefab)
                     {
-                        result.Add(GO);
+                        result.Add(PrefabUtility.GetOutermostPrefabInstanceRoot(GO));
                     }
                 }
             }
