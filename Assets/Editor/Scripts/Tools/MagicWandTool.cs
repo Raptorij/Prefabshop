@@ -22,7 +22,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Parent());
             AddParameter(new IgnoringLayer());
             AddParameter(new ListOfObjects());
-            AddParameter(new PrefabSelector(true, "Replace", onReplace));
+            AddParameter(new PrefabSelector(true, "Replace", ReplacePrefabs));
             GetParameter<PrefabSelector>().buttonName = "Replace";
         }
 

@@ -31,21 +31,12 @@ namespace Packages.PrefabshopEditor
         {
             SceneView.duringSceneGui += this.OnSceneGUI;
             var types = Assembly.GetExecutingAssembly().GetTypes();
-            possibleTools = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) && type != typeof(SmudgeTool) select type).ToArray();
-
-            var gizmosDrawer = FindObjectOfType<GizmosDrawer>();
-            if (gizmosDrawer != null)
-            {
-                DestroyImmediate(gizmosDrawer);
-            }
-            gizmosDrawer = new GameObject().AddComponent<GizmosDrawer>();
-            gizmosDrawer.tag = "EditorOnly";
+            possibleTools = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) && type != typeof(SmudgeTool) select type).ToArray();           
         }
 
         void OnDisable()
         {
             SceneView.duringSceneGui -= this.OnSceneGUI;
-            DestroyImmediate(FindObjectOfType<GizmosDrawer>().gameObject);
         }        
 
         private void OnGUI()

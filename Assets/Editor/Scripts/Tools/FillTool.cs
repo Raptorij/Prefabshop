@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.F)]
+    [BrushKeyCode(KeyCode.G)]
     public class FillTool : Tool
     {
         public RaycastHit raycastHit;
-
         GameObject go;
+        Material drawMat;
 
         public FillTool(BrushInfo into) : base(into)
         {
@@ -40,13 +40,6 @@ namespace Packages.PrefabshopEditor
         public override void DrawHandle(Ray ray)
         {
             base.DrawHandle(ray);
-            //var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
-            //var raycastHit = casts[casts.Length - 1];
-            //Handles.color = new Color(1, 0, 0, 0.25f);
-            //Handles.SphereHandleCap(0, raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
-            //Handles.color = Color.white;
-            //if (go == null)
-            //{
             if (Event.current.type == EventType.MouseMove)
             {
                 go = HandleUtility.PickGameObject(Event.current.mousePosition, false);
@@ -59,16 +52,16 @@ namespace Packages.PrefabshopEditor
                 var rotation = go.transform.rotation;
                 var scale = go.transform.lossyScale;
 
-
-                var matrix = new Matrix4x4();
+                Matrix4x4 matrix = new Matrix4x4();
                 matrix.SetTRS(position, rotation, scale);
-                var mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
-                mat.SetPass(0);
+                if (drawMat == null)
+                {
+                    drawMat = new Material(Shader.Find("Raptorij/BrushShape"));
+                }
+                drawMat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                drawMat.SetPass(0);
                 Graphics.DrawMeshNow(shape, matrix, 0);
             }
-            //}
-            //Selection.activeGameObject = go;
         }
 
         
@@ -89,22 +82,22 @@ namespace Packages.PrefabshopEditor
 
         void FindPointOnMesh(Transform currentObject)
         {
-            Vector3[] meshPoints = currentObject.GetComponent<MeshFilter>().sharedMesh.vertices;
+            var meshPoints = currentObject.GetComponent<MeshFilter>().sharedMesh.vertices;
             int[] tris = currentObject.GetComponent<MeshFilter>().sharedMesh.triangles;
-            int triStart = Random.Range(0, meshPoints.Length / 3) * 3; // get first index of each triangle
+            int triStart = Random.Range(0, meshPoints.Length / 3) * 3;
 
             float a = Random.value;
             float b = Random.value;
 
             if (a + b >= 1)
-            { // reflect back if > 1
+            {
                 a = 1 - a;
                 b = 1 - b;
             }
 
             var newPointOnMesh = meshPoints[triStart] + (a * (meshPoints[triStart + 1] - meshPoints[triStart])) + (b * (meshPoints[triStart + 2] - meshPoints[triStart])); // apply formula to get new random point inside triangle
 
-            newPointOnMesh = currentObject.TransformPoint(newPointOnMesh); // convert back to worldspace
+            newPointOnMesh = currentObject.TransformPoint(newPointOnMesh);
             var bounds = GeometryUtility.CalculateBounds(meshPoints, currentObject.localToWorldMatrix);
             
             float r = 0;
@@ -122,7 +115,7 @@ namespace Packages.PrefabshopEditor
                 r = bounds.max.z;
             }
 
-            var rayOrigin = ((Random.onUnitSphere * r) + currentObject.position); // put the ray randomly around the transform
+            var rayOrigin = ((Random.onUnitSphere * r) + currentObject.position);
 
             RaycastHit hitPoint = new RaycastHit();
             var casts = Physics.RaycastAll(rayOrigin, newPointOnMesh - rayOrigin, Mathf.Infinity);
