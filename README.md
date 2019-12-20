@@ -9,6 +9,18 @@ System Requirements
 
 - Unity 2019.1 or later
 
+Installation
+--------------
+- Create folder in your project eg `Assets/Packages/Prefabshop`
+- Open created folder in GitBush or over Version Control System
+- If your project is repository, then add this rep like submodule
+    - `git submodule add https://github.com/Raptorij/Prefabshop.git Assets/Packages/Prefabshop/`
+- If you project is no repository, then just use:
+    - `git init`
+    - `git remote add origin https://github.com/Raptorij/Prefabshop.git`
+    - `git pull origin master`
+
+
 How To Use
 --------------
 - Open Prefabshop window in `Tools/Prefabshop`
