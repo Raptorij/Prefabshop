@@ -27,8 +27,11 @@ namespace Packages.PrefabshopEditor
             if (path != "")
             {
                 setInfo = AssetDatabase.LoadAssetAtPath(path, typeof(BrushInfo)) as BrushInfo;
-                var prefs = setInfo.brushObjects.ToArray();
-                setPrefabs = prefs.ToList();
+                if (setInfo != null)
+                {
+                    var prefs = setInfo.brushObjects.ToArray();
+                    setPrefabs = prefs.ToList();
+                }
             }
         }
 
