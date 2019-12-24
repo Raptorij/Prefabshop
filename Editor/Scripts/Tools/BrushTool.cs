@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.B)]
+    [ToolKeyCodeAttribute(KeyCode.B)]
     public class BrushTool : Tool
     {
         public Mesh shape;

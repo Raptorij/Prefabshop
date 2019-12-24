@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    public class BrushKeyCodeAttribute : System.Attribute
+    public class ToolKeyCodeAttributeAttribute : System.Attribute
     {
         public readonly KeyCode keyCode;
 
-        public BrushKeyCodeAttribute(KeyCode keyCode)
+        public ToolKeyCodeAttributeAttribute(KeyCode keyCode)
         {
             this.keyCode = keyCode;
         }

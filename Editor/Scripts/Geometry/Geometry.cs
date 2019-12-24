@@ -3,54 +3,101 @@ using UnityEngine;
 
 public static class Geometry
 {
-    public static bool PointInTriangle(Point A, Point B, Point C, Point P)
+    public static Vector3[] GetSquareOverPoints(Vector3[] points)
     {
-        double s1 = C.y - A.y;
-        double s2 = C.x - A.x;
-        double s3 = B.y - A.y;
-        double s4 = P.y - A.y;
+        float minX = Mathf.Infinity;
+        float minZ = Mathf.Infinity;
 
-        double w1 = (A.x * s1 + s4 * s2 - P.x * s1) / (s3 * s2 - (B.x - A.x) * s1);
-        double w2 = (s4 - w1 * s3) / s1;
-        return w1 >= 0 && w2 >= 0 && (w1 + w2) <= 1;
-    }
+        float maxX = -Mathf.Infinity;
+        float maxZ = -Mathf.Infinity;
 
-    public static bool PointInTriangle(Vector3[] TriangleVectors, Vector3 P)
-    {
-        Vector3 A = TriangleVectors[0], B = TriangleVectors[1], C = TriangleVectors[2];
-        if (SameSide(P, A, B, C) && SameSide(P, B, A, C) && SameSide(P, C, A, B))
+        for (int i = 0; i < points.Length; i++)
         {
-            Vector3 vc1 = Vector3.Cross((A - B), (A - C));
-            if (Math.Abs(Vector3.Dot((A - P), vc1)) <= .01f)
-            {
-                return true;
-            }
+            minX = points[i].x < minX ? points[i].x : minX;
+            minZ = points[i].z < minZ ? points[i].z : minZ;
+
+            maxX = points[i].x > maxX ? points[i].x : maxX;
+            maxZ = points[i].z > maxZ ? points[i].z : maxZ;
         }
 
-        return false;
+        Vector3 minXminZ = new Vector3(minX, 0, minZ);
+        Vector3 maxXminZ = new Vector3(maxX, 0, minZ);
+        Vector3 minXmaxZ = new Vector3(minX, 0, maxZ);
+        Vector3 maxXmaxZ = new Vector3(maxX, 0, maxZ);
+
+        return new Vector3[] { minXminZ, maxXminZ, minXmaxZ, maxXmaxZ };
     }
 
-    private static bool SameSide(Vector3 p1, Vector3 p2, Vector3 A, Vector3 B)
+    public static bool PointInPolygon(float X, float Z, Vector3[] points)
     {
-        Vector3 cp1 = Vector3.Cross((B - A), (p1 - A));
-        Vector3 cp2 = Vector3.Cross((B - A), (p2 - A));
-        if (Vector3.Dot(cp1, cp2) >= 0)
+        // Get the angle between the point and the
+        // first and last vertices.
+        int max_point = points.Length - 1;
+        float total_angle = GetAngle(
+            points[max_point].x, points[max_point].z,
+            X, Z,
+            points[0].x, points[0].z);
+
+        // Add the angles from the point
+        // to each other pair of vertices.
+        for (int i = 0; i < max_point; i++)
         {
-            return true;
+            total_angle += GetAngle(
+                points[i].x, points[i].z,
+                X, Z,
+                points[i + 1].x, points[i + 1].z);
         }
-        return false;
 
+        // The total angle should be 2 * PI or -2 * PI if
+        // the point is in the polygon and close to zero
+        // if the point is outside the polygon.
+        // The following statement was changed. See the comments.
+        return (Math.Abs(total_angle) > 0.000001);
+        //return (Math.Abs(total_angle) > 1);
     }
-}
 
-public struct Point
-{
-    public readonly double x;
-    public readonly double y;
-
-    public Point(double x, double y)
+    // Return the angle ABC.
+    // Return a value between PI and -PI.
+    // Note that the value is the opposite of what you might
+    // expect because Y coordinates increase downward.
+    public static float GetAngle(float Ax, float Ay,
+        float Bx, float By, float Cx, float Cy)
     {
-        this.x = x;
-        this.y = y;
+        // Get the dot product.
+        float dot_product = DotProduct(Ax, Ay, Bx, By, Cx, Cy);
+
+        // Get the cross product.
+        float cross_product = CrossProductLength(Ax, Ay, Bx, By, Cx, Cy);
+
+        // Calculate the angle.
+        return (float)Math.Atan2(cross_product, dot_product);
+    }
+
+    // Return the dot product AB · BC.
+    // Note that AB · BC = |AB| * |BC| * Cos(theta).
+    private static float DotProduct(float Ax, float Ay,
+        float Bx, float By, float Cx, float Cy)
+    {
+        // Get the vectors' coordinates.
+        float BAx = Ax - Bx;
+        float BAy = Ay - By;
+        float BCx = Cx - Bx;
+        float BCy = Cy - By;
+
+        // Calculate the dot product.
+        return (BAx * BCx + BAy * BCy);
+    }
+
+    public static float CrossProductLength(float Ax, float Ay,
+    float Bx, float By, float Cx, float Cy)
+    {
+        // Get the vectors' coordinates.
+        float BAx = Ax - Bx;
+        float BAy = Ay - By;
+        float BCx = Cx - Bx;
+        float BCy = Cy - By;
+
+        // Calculate the Z coordinate of the cross product.
+        return (BAx * BCy - BAy * BCx);
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.M)]
+    [ToolKeyCodeAttribute(KeyCode.M)]
     public class MagicWandTool : Tool
     {
         System.Action onReplace;

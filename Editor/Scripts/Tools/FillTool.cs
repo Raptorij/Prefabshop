@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.G)]
+    [ToolKeyCodeAttribute(KeyCode.G)]
     public class FillTool : Tool
     {
         public RaycastHit raycastHit;

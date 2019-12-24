@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.S)]
+    [ToolKeyCodeAttribute(KeyCode.S)]
     public class SmudgeTool : Tool
     {
         public RaycastHit raycastHit;

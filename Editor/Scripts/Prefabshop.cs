@@ -100,7 +100,7 @@ namespace Packages.PrefabshopEditor
             }
             GUI.backgroundColor = Color.white;
 
-            BrushKeyCodeAttribute attribute = brushType.GetCustomAttribute(typeof(BrushKeyCodeAttribute)) as BrushKeyCodeAttribute;
+            ToolKeyCodeAttributeAttribute attribute = brushType.GetCustomAttribute(typeof(ToolKeyCodeAttributeAttribute)) as ToolKeyCodeAttributeAttribute;
             var brushKey = attribute.keyCode;
             Rect info = new Rect(rect.x + 30, rect.y + 5, rect.width + 80, rect.height);
             GUI.contentColor = Color.black;
@@ -147,7 +147,7 @@ namespace Packages.PrefabshopEditor
             }
             for (int i = 0; i < possibleTools.Length; i++)
             {
-                BrushKeyCodeAttribute attribute = possibleTools[i].GetCustomAttribute(typeof(BrushKeyCodeAttribute)) as BrushKeyCodeAttribute;
+                ToolKeyCodeAttributeAttribute attribute = possibleTools[i].GetCustomAttribute(typeof(ToolKeyCodeAttributeAttribute)) as ToolKeyCodeAttributeAttribute;
                 var brushKey = attribute.keyCode;
                 if (e.keyCode == brushKey)
                 {

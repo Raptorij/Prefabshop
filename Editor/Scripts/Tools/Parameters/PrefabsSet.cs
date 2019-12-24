@@ -79,6 +79,7 @@ namespace Packages.PrefabshopEditor
                         var prefs = setInfo.brushObjects.ToArray();
                         setPrefabs = prefs.ToList();
                         EditorPrefs.SetString("[Prefabshop] PrefabsSetPath",AssetDatabase.GetAssetPath(setInfo));
+                        EditorWindow.GetWindow<Prefabshop>().Repaint();
                     }
                 }
                 GUI.enabled = false;

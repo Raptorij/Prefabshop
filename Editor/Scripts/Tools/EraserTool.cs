@@ -7,7 +7,7 @@ using System;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.C)]
+    [ToolKeyCodeAttribute(KeyCode.C)]
     public class EraserTool : Tool
     {
         public bool byPrefabSet;

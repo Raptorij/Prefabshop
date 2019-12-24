@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [BrushKeyCode(KeyCode.L)]
+    [ToolKeyCodeAttribute(KeyCode.L)]
     public class LineTool : Tool
     {
         public Vector3 startPoint;
