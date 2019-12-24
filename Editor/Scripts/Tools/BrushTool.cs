@@ -120,34 +120,6 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        bool isInside(int x1, int y1, int x2,
-                         int y2, int x3, int y3,
-                         int x, int y)
-        {
-            /* Calculate area of triangle ABC */
-            double A = area(x1, y1, x2, y2, x3, y3);
-
-            /* Calculate area of triangle PBC */
-            double A1 = area(x, y, x2, y2, x3, y3);
-
-            /* Calculate area of triangle PAC */
-            double A2 = area(x1, y1, x, y, x3, y3);
-
-            /* Calculate area of triangle PAB */
-            double A3 = area(x1, y1, x2, y2, x, y);
-
-            /* Check if sum of A1, A2 and A3 is same as A */
-            return (A == A1 + A2 + A3);
-        }
-
-        double area(int x1, int y1, int x2,
-                       int y2, int x3, int y3)
-        {
-            return System.Math.Abs((x1 * (y2 - y3) +
-                             x2 * (y3 - y1) +
-                             x3 * (y1 - y2)) / 2.0);
-        }
-
         void ResetShape()
         {
             shape = null;
@@ -162,6 +134,18 @@ namespace Packages.PrefabshopEditor
                 var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
                 var casts = Physics.RaycastAll(castRay, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
 
+                var rotation = Quaternion.identity;
+                rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
+
+                var originalVert = new Vector3[shape.vertices.Length];
+                var rotatedVert = new Vector3[shape.vertices.Length];
+                originalVert = shape.vertices;
+
+                for (int i = 0; i < originalVert.Length; i++)
+                {
+                    rotatedVert[i] = rotation * originalVert[i];
+                }
+                
                 for (int k = 0; k < casts.Length; k++)
                 {
                     if (CheckCast(casts[k]))
@@ -187,7 +171,7 @@ namespace Packages.PrefabshopEditor
                             }
 
 
-                            var position = shape == null ? cast.point + random : shape.vertices[Random.Range(0, shape.vertices.Length)] * GetParameter<Radius>().value * 0.075f + cast.point;
+                            var position = ( shape == null ? cast.point + random : rotatedVert[Random.Range(0, rotatedVert.Length)] * GetParameter<Radius>().value * 0.075f + cast.point);
                             if (shape != null && GetParameter<Outer>().value)
                             {
                                 int idVert = Random.Range(0, shapeSide.vertices.Length);
