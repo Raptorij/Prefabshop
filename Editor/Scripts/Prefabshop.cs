@@ -14,7 +14,12 @@ namespace Packages.PrefabshopEditor
         static void Init()
         {
             EditorWindow.GetWindow<Prefabshop>().Show();
-        }                
+        }
+
+        public Mesh maskShape;
+        public Vector3[] maskOutline;
+
+        float time;
 
         bool blockToggle;
 
@@ -37,6 +42,7 @@ namespace Packages.PrefabshopEditor
 
         private void OnGUI()
         {
+            Shortcuts();
             scrollView = EditorGUILayout.BeginScrollView(scrollView);
             {
                 if (currentTool != null)
@@ -83,9 +89,55 @@ namespace Packages.PrefabshopEditor
                     }
                 }
             }
+
+            if (maskShape != null)
+            {
+                float y = 128;
+                Rect settingsInfoRect = new Rect(this.position.xMin + 1, this.position.yMax + y - 1, 128, y);
+                settingsInfoRect = new Rect(1, this.position.yMax - 94 - y, 212, y);
+                GUI.Box(settingsInfoRect, "Mask Options", new GUIStyle("HelpBox"));
+                Rect buttonRect = new Rect(settingsInfoRect.x + 5, settingsInfoRect.y + 5 + 18, 200, 18);
+                if (GUI.Button(buttonRect, "Reset Mask"))
+                {
+                    maskShape = null;
+                    maskOutline = null;
+                    Event.current.Use();
+                }
+                buttonRect.y += 19;
+                if (GUI.Button(buttonRect, "Select prefabs inside Mask"))
+                {
+                    maskShape = null;
+                    maskOutline = null;
+                    Event.current.Use();
+                }
+            }
+
             Handles.EndGUI();
+            DrawMask();
             currentTool?.CastBrush();
             Tools.hidden = blockToggle;
+        }
+
+        void DrawMask()
+        {
+            if (maskShape != null)
+            {
+                time += Time.unscaledDeltaTime * 2;
+                for (int i = 0; i < maskOutline.Length - 1; i++)
+                {
+                    var colorLine = (i + (int)time) % 2 == 0 ? Color.black : Color.white;
+                    Handles.color = colorLine;
+                    Handles.DrawLine(maskOutline[i], maskOutline[i + 1]);
+                }
+
+                var matrix = new Matrix4x4();
+                matrix.SetTRS(Vector3.zero, Quaternion.identity, Vector3.one);
+                var mat = new Material(Shader.Find("Raptorij/Lines"));
+                mat.SetColor("_Color1", new Color(1, 1, 1, 0.25f));
+                mat.SetColor("_Color2", new Color(0, 0, 0, 0.25f));
+                mat.SetPass(0);
+                Graphics.DrawMeshNow(maskShape, matrix, 0);
+            }
         }
 
         void DrawToolGUI(Rect rect, System.Type brushType, bool haveBrush)

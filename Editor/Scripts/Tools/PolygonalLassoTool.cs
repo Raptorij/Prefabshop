@@ -5,11 +5,12 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [ToolKeyCodeAttribute(KeyCode.L)]
+    [ToolKeyCodeAttribute(KeyCode.P)]
     public class PolygonalLassoTool : Tool
     {
         public Mesh shapeSelection;
         Mesh squareMesh;
+        bool isPaint;
 
         public List<Vector3> selectionPoints = new List<Vector3>();
 
@@ -35,40 +36,17 @@ namespace Packages.PrefabshopEditor
         public override void DrawTool(Ray drawPointHit)
         {
             base.DrawTool(drawPointHit);
-            for (int i = 0; i < selectionPoints.Count - 1; i++)
+            var previousFocus = EditorWindow.focusedWindow;
+            if (EditorWindow.GetWindow<Prefabshop>().maskShape == null || isPaint)
             {
-                var colorLine = i % 2 == 0 ? Color.yellow : Color.red;
-                Handles.color = colorLine;
-                Handles.DrawLine(selectionPoints[i], selectionPoints[i + 1]);
+                for (int i = 0; i < selectionPoints.Count - 1; i++)
+                {
+                    var colorLine = i % 2 == 0 ? Color.black : Color.white;
+                    Handles.color = colorLine;
+                    Handles.DrawLine(selectionPoints[i], selectionPoints[i + 1]);
+                }
             }
-
-            if (squareMesh != null)
-            {
-                var matrix = new Matrix4x4();
-                matrix.SetTRS(Vector3.zero, Quaternion.identity, Vector3.one);
-                var mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                mat.SetColor("_Color", new Color(1, 1, 1, 0.125f));
-                mat.SetPass(0);
-                Graphics.DrawMeshNow(squareMesh, matrix, 0);
-
-                Vector3 centerOfMask = Vector3.zero;
-                var squareVert = squareMesh.vertices;
-                centerOfMask.x = (squareVert[0].x + squareVert[1].x + squareVert[2].x + squareVert[3].x) / 4;
-                //m.y = (p1.y + p2.y + p3.y + p4.y) / 4;
-                centerOfMask.z = (squareVert[0].z + squareVert[1].z + squareVert[2].z + squareVert[3].z) / 4;
-
-                Handles.DrawSphere(0, centerOfMask, Quaternion.identity, 1f);
-            }
-
-            if (shapeSelection != null)
-            {
-                var matrix = new Matrix4x4();
-                matrix.SetTRS(Vector3.zero, Quaternion.identity, Vector3.one);
-                var mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                mat.SetColor("_Color", new Color(1, 0, 0, 0.5f));
-                mat.SetPass(0);
-                Graphics.DrawMeshNow(shapeSelection, matrix, 0);
-            }
+            previousFocus.Focus();
         }
 
         public override void Paint(RaycastHit drawPointHit)
@@ -76,6 +54,13 @@ namespace Packages.PrefabshopEditor
             base.Paint(drawPointHit);
 
             var e = Event.current;
+            isPaint = e.button == 0 && (e.type == EventType.MouseDrag || e.type == EventType.MouseDown);
+            if (e.type == EventType.MouseDrag && e.button == 0)
+            {
+                selectionPoints.Add(drawPointHit.point);
+                e.Use();
+                return;
+            }
 
             if (e.type == EventType.MouseDown && e.button == 0)
             {
@@ -83,7 +68,6 @@ namespace Packages.PrefabshopEditor
                 {
                     selectionPoints.Add(selectionPoints[0]);
                     CreateSuqareOverMask();
-                    selectionPoints.Add(selectionPoints[0]);
                     float z = squareMesh.vertices[3].z - squareMesh.vertices[0].z;
                     float x = squareMesh.vertices[3].x - squareMesh.vertices[0].x;
 
@@ -113,36 +97,7 @@ namespace Packages.PrefabshopEditor
 
                     if (selectionPoints.Count >= 3)
                     {
-                        MarchingSquares ms = new MarchingSquares();
-                        shapeSelection = ms.GenerateMesh(textureMap, 1f);
-
-                        var originalVerts = new Vector3[shapeSelection.vertices.Length];
-                        originalVerts = shapeSelection.vertices;
-
-                        var rotatedVerts = new Vector3[originalVerts.Length];
-                        var qAngle = Quaternion.AngleAxis(-90, Vector3.up);
-
-                        Vector3 centerOfMask = Vector3.zero;
-                        var squareVert = squareMesh.vertices;
-                        centerOfMask.x = (squareVert[0].x + squareVert[1].x + squareVert[2].x + squareVert[3].x) / 4;
-                        //m.y = (p1.y + p2.y + p3.y + p4.y) / 4;
-                        centerOfMask.z = (squareVert[0].z + squareVert[1].z + squareVert[2].z + squareVert[3].z) / 4;
-
-                        for (int i = 0; i < originalVerts.Length; i++)
-                        {
-                            var vertex = originalVerts[i];
-                            vertex.x = vertex.x * acepRatioX;
-                            vertex.y = vertex.y * 1;
-                            vertex.z = vertex.z * 1;
-                            originalVerts[i] = vertex;
-                            originalVerts[i] += centerOfMask;
-                            //rotatedVerts[i] = qAngle * originalVerts[i];
-                        }
-
-                        shapeSelection.vertices = originalVerts;
-                        //shapeSide = ms.CreateMeshOutline();
-                        System.GC.Collect();
-                        System.GC.WaitForPendingFinalizers();
+                        CreateMaskMesh();
                     }
                 }
                 else if (e.shift)
@@ -154,8 +109,42 @@ namespace Packages.PrefabshopEditor
                     selectionPoints.Clear();
                     selectionPoints.Add(drawPointHit.point);
                 }
+                e.Use();
                 return;
             }
+        }
+
+        void CreateMaskMesh()
+        {
+            var points2d = new Vector2[selectionPoints.Count];
+            for (int i = 0; i < points2d.Length; i++)
+            {
+                points2d[i] = new Vector2(selectionPoints[i].x, selectionPoints[i].z);
+            }
+            Triangulator tr = new Triangulator(points2d);
+            int[] indices = tr.Triangulate();
+
+            // Create the Vector3 vertices
+            Vector3[] vertices = new Vector3[selectionPoints.Count];
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                vertices[i] = new Vector3(selectionPoints[i].x, 0, selectionPoints[i].z);
+            }
+
+            var uv = UvCalculator.CalculateUVs(vertices, 1f);
+
+            // Create the mesh
+            Mesh msh = new Mesh();
+            msh.vertices = vertices;
+            msh.triangles = indices;
+            msh.uv = uv;
+            msh.RecalculateNormals();
+            msh.RecalculateBounds();
+            
+            shapeSelection = msh;
+
+            EditorWindow.GetWindow<Prefabshop>().maskShape = msh;
+            EditorWindow.GetWindow<Prefabshop>().maskOutline = selectionPoints.ToArray();
         }
 
         void CreateSuqareOverMask()

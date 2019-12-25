@@ -30,6 +30,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
             AddParameter(new IgnoringLayer(type));
+            AddParameter(new Mask(type));
 
             GetParameter<Shape>().onTextureChange += ResetShape;
             GetParameter<Shape>().OnValueChange += ResetShape;
@@ -134,16 +135,21 @@ namespace Packages.PrefabshopEditor
                 var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
                 var casts = Physics.RaycastAll(castRay, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
 
-                var rotation = Quaternion.identity;
-                rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
+                var originalVert = new Vector3[] { };
+                var rotatedVert = new Vector3[] { };
 
-                var originalVert = new Vector3[shape.vertices.Length];
-                var rotatedVert = new Vector3[shape.vertices.Length];
-                originalVert = shape.vertices;
-
-                for (int i = 0; i < originalVert.Length; i++)
+                if (shape != null)
                 {
-                    rotatedVert[i] = rotation * originalVert[i];
+                    var rotation = Quaternion.identity;
+                    rotation = Quaternion.LookRotation(raycastHit.normal) * Quaternion.Euler(90f, 0f, 0f);
+                    originalVert = new Vector3[shape.vertices.Length];
+                    rotatedVert = new Vector3[shape.vertices.Length];
+                    originalVert = shape.vertices;
+
+                    for (int i = 0; i < originalVert.Length; i++)
+                    {
+                        rotatedVert[i] = rotation * originalVert[i];
+                    }
                 }
                 
                 for (int k = 0; k < casts.Length; k++)
@@ -233,6 +239,10 @@ namespace Packages.PrefabshopEditor
         bool CheckCast(RaycastHit cast)
         {
             var hitObj = cast.collider.gameObject;
+            if (!GetParameter<Mask>().CheckPoint(cast.point))
+            {
+                return false;
+            }
             if (GetParameter<FirstObjectFilter>().value && GetParameter<FirstObjectFilter>().Enable)
             {
                 if (targetSpawnObject == hitObj)

@@ -25,6 +25,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Parent(type));
             AddParameter(new IgnoringLayer(type));
             AddParameter(new ListOfObjects(type));
+            AddParameter(new Mask(type));
             GetParameter<PrefabsSet>().Activate();
         }
 

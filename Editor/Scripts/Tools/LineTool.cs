@@ -28,6 +28,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
             AddParameter(new IgnoringLayer(type));
+            AddParameter(new Mask(type));
 
             OnStartPaint += StartPaint;
             OnEndPaint += EndPain;
@@ -68,6 +69,10 @@ namespace Packages.PrefabshopEditor
                 
                 if (Physics.Raycast(castRay, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                 {
+                    if (!GetParameter<Mask>().CheckPoint(castCheck.point))
+                    {
+                        continue;
+                    }
                     if (!CheckCast(castCheck))
                     {
                         continue;
