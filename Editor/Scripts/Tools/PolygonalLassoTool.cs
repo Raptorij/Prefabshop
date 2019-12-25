@@ -88,10 +88,6 @@ namespace Packages.PrefabshopEditor
 
                             Vector3 point = new Vector3(x * ((float)j / count), 0, z * ((float)i / count));
                             textureMap[j, i] = Geometry.PointInPolygon(X, Z, selectionPoints.ToArray()) ? 1 : 0;
-                            if (Geometry.PointInPolygon(X, Z, selectionPoints.ToArray()))
-                            {
-                                Debug.Log("point is inside :: " + point);
-                            }
                         }
                     }
 
@@ -142,7 +138,7 @@ namespace Packages.PrefabshopEditor
             msh.RecalculateBounds();
             
             shapeSelection = msh;
-
+            selectionPoints.Add(selectionPoints[0]);
             EditorWindow.GetWindow<Prefabshop>().maskShape = msh;
             EditorWindow.GetWindow<Prefabshop>().maskOutline = selectionPoints.ToArray();
         }
