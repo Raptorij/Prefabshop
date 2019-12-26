@@ -122,10 +122,9 @@ namespace Packages.PrefabshopEditor
         {
             if (maskShape != null)
             {
-                time += Time.unscaledDeltaTime * 2;
                 for (int i = 0; i < maskOutline.Length - 1; i++)
                 {
-                    var colorLine = (i + (int)time) % 2 == 0 ? Color.black : Color.white;
+                    var colorLine = i % 2 == 0 ? Color.black : Color.white;
                     Handles.color = colorLine;
                     Handles.DrawLine(maskOutline[i], maskOutline[i + 1]);
                 }

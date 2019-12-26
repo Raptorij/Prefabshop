@@ -36,17 +36,22 @@ namespace Packages.PrefabshopEditor
         public override void DrawTool(Ray drawPointHit)
         {
             base.DrawTool(drawPointHit);
-            var previousFocus = EditorWindow.focusedWindow;
-            if (EditorWindow.GetWindow<Prefabshop>().maskShape == null || isPaint)
+            for (int i = 0; i < selectionPoints.Count - 1; i++)
             {
-                for (int i = 0; i < selectionPoints.Count - 1; i++)
+                var colorLine = i % 2 == 0 ? Color.black : Color.white;
+                Handles.color = colorLine;
+                Handles.DrawLine(selectionPoints[i], selectionPoints[i + 1]);
+            }
+
+            var e = Event.current;
+            if (e.button == 0)
+            {
+                if (e.type == EventType.MouseUp && !e.shift && !e.control)
                 {
-                    var colorLine = i % 2 == 0 ? Color.black : Color.white;
-                    Handles.color = colorLine;
-                    Handles.DrawLine(selectionPoints[i], selectionPoints[i + 1]);
+                    Debug.Log("Mouse Up");
+                    GenerateMaskMap();
                 }
             }
-            previousFocus.Focus();
         }
 
         public override void Paint(RaycastHit drawPointHit)
@@ -54,6 +59,7 @@ namespace Packages.PrefabshopEditor
             base.Paint(drawPointHit);
 
             var e = Event.current;
+
             isPaint = e.button == 0 && (e.type == EventType.MouseDrag || e.type == EventType.MouseDown);
             if (e.type == EventType.MouseDrag && e.button == 0)
             {
@@ -66,35 +72,7 @@ namespace Packages.PrefabshopEditor
             {
                 if (e.control)
                 {
-                    selectionPoints.Add(selectionPoints[0]);
-                    CreateSuqareOverMask();
-                    float z = squareMesh.vertices[3].z - squareMesh.vertices[0].z;
-                    float x = squareMesh.vertices[3].x - squareMesh.vertices[0].x;
-
-                    float acepRatioX = (x / z);
-                    int acepRatioZ = (int)(z / x);
-
-                    int count = GetParameter<Count>().value;
-
-                    int[,] textureMap = new int[count, count];
-
-                    for (int i = 0; i < count; i++)
-                    {
-                        for (int j = 0; j < count; j++)
-                        {
-
-                            float X = squareMesh.vertices[0].x + x * ((float)j / count);
-                            float Z = squareMesh.vertices[0].z + z * ((float)i / count);
-
-                            Vector3 point = new Vector3(x * ((float)j / count), 0, z * ((float)i / count));
-                            textureMap[j, i] = Geometry.PointInPolygon(X, Z, selectionPoints.ToArray()) ? 1 : 0;
-                        }
-                    }
-
-                    if (selectionPoints.Count >= 3)
-                    {
-                        CreateMaskMesh();
-                    }
+                    GenerateMaskMap();
                 }
                 else if (e.shift)
                 {
@@ -102,11 +80,47 @@ namespace Packages.PrefabshopEditor
                 }
                 else
                 {
+                    var previousFocus = EditorWindow.focusedWindow;
+                    EditorWindow.GetWindow<Prefabshop>().maskShape = null;
+                    previousFocus.Focus();
                     selectionPoints.Clear();
                     selectionPoints.Add(drawPointHit.point);
                 }
                 e.Use();
                 return;
+            }
+        }
+
+        void GenerateMaskMap()
+        {
+            selectionPoints.Add(selectionPoints[0]);
+            CreateSuqareOverMask();
+            float z = squareMesh.vertices[3].z - squareMesh.vertices[0].z;
+            float x = squareMesh.vertices[3].x - squareMesh.vertices[0].x;
+
+            float acepRatioX = (x / z);
+            int acepRatioZ = (int)(z / x);
+
+            int count = GetParameter<Count>().value;
+
+            int[,] textureMap = new int[count, count];
+
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = 0; j < count; j++)
+                {
+
+                    float X = squareMesh.vertices[0].x + x * ((float)j / count);
+                    float Z = squareMesh.vertices[0].z + z * ((float)i / count);
+
+                    Vector3 point = new Vector3(x * ((float)j / count), 0, z * ((float)i / count));
+                    textureMap[j, i] = Geometry.PointInPolygon(X, Z, selectionPoints.ToArray()) ? 1 : 0;
+                }
+            }
+
+            if (selectionPoints.Count >= 3)
+            {
+                CreateMaskMesh();
             }
         }
 
