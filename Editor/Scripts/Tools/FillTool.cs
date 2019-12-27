@@ -32,40 +32,54 @@ namespace Packages.PrefabshopEditor
         public override void SelectTool()
         {
             base.SelectTool();
-            go = HandleUtility.PickGameObject(Event.current.mousePosition, false);
-            Selection.activeGameObject = go;
         }
 
         public override void DeselectTool()
         {
             base.DeselectTool();
-            Selection.activeGameObject = null;
         }
-
+        
         public override void DrawHandle(Ray ray)
         {
             base.DrawHandle(ray);
-            if (Event.current.type == EventType.MouseMove)
+            if (GetParameter<Mask>().HaveMask)
             {
-                go = HandleUtility.PickGameObject(Event.current.mousePosition, false);
-
-            }
-            if (go != null)
-            {
-                var shape = go.GetComponentInChildren<MeshFilter>().sharedMesh;
-                var position = go.transform.position;
-                var rotation = go.transform.rotation;
-                var scale = go.transform.lossyScale;
-
-                Matrix4x4 matrix = new Matrix4x4();
-                matrix.SetTRS(position, rotation, scale);
-                if (drawMat == null)
+                RaycastHit drawPointHit;
+                if (Physics.Raycast(ray, out drawPointHit, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                 {
-                    drawMat = new Material(Shader.Find("Raptorij/BrushShape"));
+                    if (GetParameter<Mask>().CheckPoint(drawPointHit.point))
+                    {
+                        var mat = new Material(Shader.Find("Raptorij/BrushShape"));
+                        mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                        mat.SetPass(0);
+                        Graphics.DrawMeshNow(GetParameter<Mask>().MaskShape, Matrix4x4.identity, 0);
+                    }
                 }
-                drawMat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
-                drawMat.SetPass(0);
-                Graphics.DrawMeshNow(shape, matrix, 0);
+            }
+            else
+            {
+                if (Event.current.type == EventType.MouseMove)
+                {
+                    go = HandleUtility.PickGameObject(Event.current.mousePosition, false);
+
+                }
+                if (go != null)
+                {
+                    var shape = go.GetComponentInChildren<MeshFilter>().sharedMesh;
+                    var position = go.transform.position;
+                    var rotation = go.transform.rotation;
+                    var scale = go.transform.lossyScale;
+
+                    Matrix4x4 matrix = new Matrix4x4();
+                    matrix.SetTRS(position, rotation, scale);
+                    if (drawMat == null)
+                    {
+                        drawMat = new Material(Shader.Find("Raptorij/BrushShape"));
+                    }
+                    drawMat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                    drawMat.SetPass(0);
+                    Graphics.DrawMeshNow(shape, matrix, 0);
+                }
             }
         }
 
@@ -73,23 +87,37 @@ namespace Packages.PrefabshopEditor
 
         public override void Paint(RaycastHit drawPointHit)
         {
-            base.Paint(drawPointHit);
-
+            base.Paint(drawPointHit);            
             var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            RaycastHit raycast;
-            Physics.Raycast(castRay, out raycast, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
-            var objectWithMesh = go.GetComponentInChildren<MeshFilter>().transform;
-            var prefabs = GetParameter<PrefabsSet>().selectedPrefabs;
-            if (prefabs.Count > 0)
+            if (GetParameter<Mask>().HaveMask)
             {
-                for (int i = 0; i < GetParameter<Count>().value; i++)
+                RaycastHit raycast;
+                if (Physics.Raycast(castRay, out raycast, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                 {
-                    FindPointOnMesh(objectWithMesh);
+                    if (GetParameter<Mask>().CheckPoint(raycast.point))
+                    {
+                        for (int i = 0; i < GetParameter<Count>().value; i++)
+                        {
+                            CreateObject(Geometry.GetRandomPointOnMesh(GetParameter<Mask>().MaskShape), Quaternion.identity);
+                        }
+                    }
                 }
             }
             else
             {
-                Debug.Log($"<color=magenta>[Prefabshop] </color> There is no selected any objects in Options");
+                var objectWithMesh = go.GetComponentInChildren<MeshFilter>().transform;
+                var prefabs = GetParameter<PrefabsSet>().selectedPrefabs;
+                if (prefabs.Count > 0)
+                {
+                    for (int i = 0; i < GetParameter<Count>().value; i++)
+                    {
+                        FindPointOnMesh(objectWithMesh);
+                    }
+                }
+                else
+                {
+                    Debug.Log($"<color=magenta>[Prefabshop] </color> There is no selected any objects in Options");
+                }
             }
         }
 

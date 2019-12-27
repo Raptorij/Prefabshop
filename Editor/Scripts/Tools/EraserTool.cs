@@ -23,6 +23,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Layer(type));
             AddParameter(new IgnoringLayer(type));
             AddParameter(new CachedGameObjects(type));
+            AddParameter(new Mask(type));
             OnEndPaint += EndPaint;
 
             GetParameter<SelectToolBar>().toolBar = new string[] { "By PrefabsSet", "All Prefabs" };
@@ -82,19 +83,34 @@ namespace Packages.PrefabshopEditor
                 {
                     if (GetParameter<PrefabsSet>().selectedPrefabs.Contains(prefabAsset))
                     {
-                        go.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
-                        go.SetActive(false);
-                        GetParameter<CachedGameObjects>().AddToСache(go);
+                        AddToCache(go);
                     }
                 }
                 else
+                {
+                    AddToCache(go);
+                }
+            }
+            onlyPrefabs.Clear();
+        }
+
+        private void AddToCache(GameObject go)
+        {
+            if (GetParameter<Mask>().HaveMask)
+            {
+                if (GetParameter<Mask>().CheckPoint(go.transform.position))
                 {
                     go.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
                     go.SetActive(false);
                     GetParameter<CachedGameObjects>().AddToСache(go);
                 }
             }
-            onlyPrefabs.Clear();
+            else
+            {
+                go.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
+                go.SetActive(false);
+                GetParameter<CachedGameObjects>().AddToСache(go);
+            }
         }
 
         private void EndPaint(RaycastHit raycastHit)

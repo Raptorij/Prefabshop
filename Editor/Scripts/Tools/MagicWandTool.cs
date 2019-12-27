@@ -22,6 +22,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new ListOfObjects(type));
             AddParameter(new PrefabsSet(type));
             AddParameter(new ButtonParameter(type));
+            AddParameter(new Mask(type));
             GetParameter<ButtonParameter>().buttonName = "Replace Selected";
             GetParameter<PrefabsSet>().Activate();
         }
@@ -136,7 +137,18 @@ namespace Packages.PrefabshopEditor
                     var GO_prefab = PrefabUtility.GetCorrespondingObjectFromSource(GO);
                     if (myPrefab == GO_prefab)
                     {
-                        result.Add(PrefabUtility.GetOutermostPrefabInstanceRoot(GO));
+                        var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(GO);
+                        if (GetParameter<Mask>().HaveMask)
+                        {
+                            if (GetParameter<Mask>().CheckPoint(prefabRoot.transform.position))
+                            {
+                                result.Add(prefabRoot);
+                            }
+                        }
+                        else
+                        {
+                            result.Add(prefabRoot);
+                        }
                     }
                 }
             }

@@ -163,7 +163,7 @@ namespace Packages.PrefabshopEditor
                         var perpendicularX = Vector3.Cross(cast.normal, cast.normal.Y(cast.normal.x + Random.value, cast.normal.z + Random.value)).normalized;
                         var perpendicularY = Vector3.Cross(cast.normal, perpendicularX).normalized;
 
-                        int whileBreaker = GetParameter<Count>().value * 4;
+                        int whileBreaker = GetParameter<Count>().value;
                         do
                         {
                             whileBreaker--;

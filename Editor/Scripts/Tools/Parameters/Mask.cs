@@ -8,25 +8,47 @@ namespace Packages.PrefabshopEditor
 {
     public class Mask : Parameter
     {
-        public bool isEnabled;
+        private Prefabshop prefabshop;
+
+        bool haveMask;
+        public bool HaveMask
+        {
+            get
+            {
+                haveMask = prefabshop.maskShape != null;
+                return haveMask;
+            }
+        }
+
+        private Mesh maskShape;
+        public Mesh MaskShape
+        {
+            get
+            {
+                maskShape = prefabshop.maskShape;
+                return maskShape;
+            }
+        }
 
         public Mask(Type toolType) : base(toolType)
         {
             Hidden = true;
+            var previousFocus = EditorWindow.focusedWindow;
+            prefabshop = EditorWindow.GetWindow<Prefabshop>();
+            haveMask = prefabshop.maskShape != null;
+            maskShape = prefabshop.maskShape;
+            previousFocus.Focus();
         }        
 
         public bool CheckPoint(Vector3 point)
         {
-            var previousFocus = EditorWindow.focusedWindow;
-            if (EditorWindow.GetWindow<Prefabshop>().maskShape != null)
+            if (prefabshop.maskShape != null)
             {
-                var maskOutline = EditorWindow.GetWindow<Prefabshop>().maskOutline;
-                previousFocus.Focus();
+                var maskOutline = prefabshop.maskOutline;
                 return Geometry.PointInPolygon(point.x, point.z, maskOutline);
             }
             else
             {
-                previousFocus.Focus();
                 return true;
             }
         }

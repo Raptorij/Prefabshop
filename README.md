@@ -39,4 +39,4 @@ _**Eraser**_ - [C]     | EraserTool allow you to Remove Prefabs | <img src="demo
 _**Line**_ - [L]       | LineTool allows you to place Prefabs by line | <img src="demo/lineTool.gif" width="320"/>
 _**Fill**_ - [G]       | FillTool allows you to randomly place Prefabs on object surface | <img src="demo/fillTool.gif" width="320"/>
 _**Magic Wand**_ - [M]  | LineTool allows you to select all prefabs instance on scene by select one of them | <img src="demo/magicWandTool.gif" width="320"/>
-_**Lasso**_ - [P] (Demo) | LassoTool allows you to create mask for painting | <img src="demo/lassoTool.gif" width="320"/>
+_**Lasso**_ - [P] | LassoTool allows you to create mask for using tools only inside of mask | <img src="demo/lassoTool.gif" width="320"/>

@@ -26,11 +26,13 @@ namespace Packages.PrefabshopEditor
         public override void SelectTool()
         {
             base.SelectTool();
+            selectionPoints = new List<Vector3>();
         }
 
         public override void DeselectTool()
         {
             base.DeselectTool();
+            selectionPoints = new List<Vector3>();
         }
 
         public override void DrawTool(Ray drawPointHit)
@@ -48,7 +50,6 @@ namespace Packages.PrefabshopEditor
             {
                 if (e.type == EventType.MouseUp && !e.shift && !e.control)
                 {
-                    Debug.Log("Mouse Up");
                     GenerateMaskMap();
                 }
             }

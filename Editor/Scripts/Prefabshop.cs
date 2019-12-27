@@ -104,12 +104,14 @@ namespace Packages.PrefabshopEditor
                     Event.current.Use();
                 }
                 buttonRect.y += 19;
+                GUI.enabled = false;
                 if (GUI.Button(buttonRect, "Select prefabs inside Mask"))
                 {
                     maskShape = null;
                     maskOutline = null;
                     Event.current.Use();
                 }
+                GUI.enabled = true;
             }
 
             Handles.EndGUI();
