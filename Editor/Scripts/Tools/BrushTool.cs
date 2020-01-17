@@ -27,6 +27,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Layer(type));
             AddParameter(new Parent(type));
             AddParameter(new Scale(type));
+            AddParameter(new Rotation(type));
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
             AddParameter(new IgnoringLayer(type));
@@ -222,7 +223,8 @@ namespace Packages.PrefabshopEditor
             var prefabs = GetParameter<PrefabsSet>().GetSelectedPrefabs();
             if (prefabs.Count > 0)
             {
-                GameObject osd = PrefabUtility.InstantiatePrefab(prefabs[Random.Range(0, prefabs.Count)]) as GameObject;
+                var selectedPrefab = prefabs[Random.Range(0, prefabs.Count)];
+                GameObject osd = PrefabUtility.InstantiatePrefab(selectedPrefab) as GameObject;
                 osd.transform.position = newPos;
                 if (GetParameter<Scale>().randomScale)
                 {
@@ -230,6 +232,7 @@ namespace Packages.PrefabshopEditor
                 }
                 osd.transform.up = rayHit.normal;
                 osd.transform.SetParent(GetParameter<Parent>().value);
+                osd.transform.eulerAngles = GetParameter<Rotation>().GetRotation(selectedPrefab);
                 osd.tag = GetParameter<Tag>().value;
                 osd.layer = GetParameter<Layer>().value;
                 Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
