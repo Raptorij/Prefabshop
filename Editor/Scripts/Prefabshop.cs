@@ -152,7 +152,9 @@ namespace Packages.PrefabshopEditor
             Rect settingsInfoRect = new Rect(lablePos, labelRect.size);
             GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
             GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
+            GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
             GUI.Label(settingsInfoRect, mouseInfo);
+            GUI.contentColor = Color.white;
         }
 
         void DrawMask()
