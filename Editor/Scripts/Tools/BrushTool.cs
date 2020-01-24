@@ -34,7 +34,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Mask(type));
 
             GetParameter<Shape>().onTextureChange += ResetShape;
-            GetParameter<Shape>().OnValueChange += ResetShape;
+            GetParameter<Shape>().valueChanged += ResetShape;
             GetParameter<PrefabsSet>().Activate();
         }
 
@@ -48,8 +48,9 @@ namespace Packages.PrefabshopEditor
             base.DeselectTool();
         }
 
-        public override void DrawHandle(Ray ray)
+        public override void DrawTool(Ray ray)
         {
+            base.DrawTool(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
             var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)

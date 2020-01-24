@@ -36,7 +36,7 @@ namespace Packages.PrefabshopEditor
             {
                 if (invert != value)
                 {
-                    OnValueChange?.Invoke();
+                    valueChanged?.Invoke();
                     invert = value;
                 }
             }

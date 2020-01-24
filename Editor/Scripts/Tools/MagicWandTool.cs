@@ -23,6 +23,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new ListOfObjects(type));
             AddParameter(new PrefabsSet(type));
             AddParameter(new Rotation(type));
+            AddParameter(new ToggleParameter(type, "Save Hierarchy Position", 0));
             AddParameter(new ButtonParameter(type));
             AddParameter(new Mask(type));
 
@@ -53,9 +54,9 @@ namespace Packages.PrefabshopEditor
             base.DeselectTool();
         }
 
-        public override void DrawHandle(Ray drawPointHit)
+        public override void DrawTool(Ray drawPointHit)
         {
-            base.DrawHandle(drawPointHit);
+            base.DrawTool(drawPointHit);
 
             if (Event.current.type == EventType.MouseMove)
             {
@@ -90,7 +91,6 @@ namespace Packages.PrefabshopEditor
                     var rotation = shape[i].transform.rotation;
                     var scale = shape[i].transform.lossyScale;
 
-
                     var matrix = new Matrix4x4();
                     matrix.SetTRS(position, rotation, scale);
                     Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
@@ -109,7 +109,6 @@ namespace Packages.PrefabshopEditor
                 var position = shape[i].transform.position;
                 var rotation = shape[i].transform.rotation;
                 var scale = shape[i].transform.lossyScale;
-
 
                 var matrix = new Matrix4x4();
                 matrix.SetTRS(position, rotation, scale);
@@ -173,10 +172,7 @@ namespace Packages.PrefabshopEditor
                 var gameObjects = Selection.objects;
                 for (int i = 0; i < gameObjects.Length; i++)
                 {
-                    GameObject obj = gameObjects[i] as GameObject;
-                    var position = obj.transform.position;
-                    var rotation = obj.transform.rotation;
-                    CreateObject(obj);
+                    CreateObject(gameObjects[i] as GameObject);
                 }
                 for (int i = 0; i < gameObjects.Length; i++)
                 {
@@ -199,6 +195,14 @@ namespace Packages.PrefabshopEditor
                 var getRotation = GetParameter<Rotation>().GetRotation(refObject);
                 var finalEulerAngles = getRotation != Vector3.zero ? getRotation : refObject.transform.eulerAngles;
                 osd.transform.eulerAngles = finalEulerAngles;
+                if (GetParameter<ToggleParameter>().value)
+                {
+                    osd.transform.SetParent(refObject.transform.parent, true);
+                }
+                else if (GetParameter<Parent>().value != null)
+                {
+                    osd.transform.SetParent(GetParameter<Parent>().value, true);
+                }
                 Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
             }
         }

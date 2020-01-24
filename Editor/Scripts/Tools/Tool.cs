@@ -52,6 +52,11 @@ namespace Packages.PrefabshopEditor
             return parameters.Find(search => search is P) as P;
         }
 
+        public P GetParameter<P>(int id) where P : Parameter
+        {
+            return parameters.Find(search => search is P && search.Identifier == id) as P;
+        }
+
         public virtual void SelectTool()
         {
             OnSelectTool?.Invoke();
@@ -76,14 +81,14 @@ namespace Packages.PrefabshopEditor
             RaycastHit drawPointHit;
             if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
             {
-                DrawHandle(drawPointRay);
                 var mouseRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
 
                 Handles.BeginGUI();
-                Handles.Label(mouseRay.origin - Vector3.up * 0.05f + Vector3.forward * 0.05f, $"Name:{drawPointHit.collider.gameObject.name}" +
-                                            (drawPointHit.collider.gameObject.transform.parent ? $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
-                                            $"\nTag: {drawPointHit.collider.gameObject.tag}" +
-                                            $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
+                Vector2 infoPos = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
+                Handles.Label(infoPos, $"Name:{drawPointHit.collider.gameObject.name}" +
+                                       (drawPointHit.collider.gameObject.transform.parent ? $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
+                                       $"\nTag: {drawPointHit.collider.gameObject.tag}" +
+                                       $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
                 Handles.EndGUI();
 
                 if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
@@ -101,11 +106,6 @@ namespace Packages.PrefabshopEditor
                 }
                 SceneView.RepaintAll();
             }
-        }
-
-        public virtual void DrawHandle(Ray drawPointHit)
-        {
-
         }
 
         public virtual void Paint(RaycastHit drawPointHit)

@@ -19,8 +19,9 @@ namespace Packages.PrefabshopEditor
             AddParameter(new IgnoringLayer(type));
         }
         
-        public override void DrawHandle(Ray ray)
+        public override void DrawTool(Ray ray)
         {
+            base.DrawTool(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
             var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)

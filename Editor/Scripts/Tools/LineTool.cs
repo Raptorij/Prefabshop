@@ -99,9 +99,9 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        public override void DrawHandle(Ray ray)
+        public override void DrawTool(Ray ray)
         {
-            base.DrawHandle(ray);
+            base.DrawTool(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
             var closest = Mathf.Infinity;
             var currentCamera = Camera.current;

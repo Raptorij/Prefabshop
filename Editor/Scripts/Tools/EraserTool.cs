@@ -47,8 +47,9 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        public override void DrawHandle(Ray ray)
+        public override void DrawTool(Ray ray)
         {
+            base.DrawTool(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
             var raycastHit = casts[casts.Length - 1];
             Handles.color = new Color(1, 0, 0, 0.25f);

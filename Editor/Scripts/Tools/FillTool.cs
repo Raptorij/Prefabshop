@@ -39,9 +39,9 @@ namespace Packages.PrefabshopEditor
             base.DeselectTool();
         }
         
-        public override void DrawHandle(Ray ray)
+        public override void DrawTool(Ray ray)
         {
-            base.DrawHandle(ray);
+            base.DrawTool(ray);
             if (GetParameter<Mask>().HaveMask)
             {
                 RaycastHit drawPointHit;
@@ -81,9 +81,7 @@ namespace Packages.PrefabshopEditor
                     Graphics.DrawMeshNow(shape, matrix, 0);
                 }
             }
-        }
-
-        
+        }        
 
         public override void Paint(RaycastHit drawPointHit)
         {
