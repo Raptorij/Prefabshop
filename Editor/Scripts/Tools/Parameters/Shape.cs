@@ -57,6 +57,10 @@ namespace Packages.PrefabshopEditor
         {
             EditorGUI.BeginChangeCheck();
             Texture = EditorGUILayout.ObjectField(this.GetType().Name, Texture, typeof(Texture2D), false) as Texture2D;
+            if (GUILayout.Button("Clear Shape"))
+            {
+                Texture = null;
+            }
             if (EditorGUI.EndChangeCheck())
             {
                 EditorPrefs.SetString($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", AssetDatabase.GetAssetPath(Texture));

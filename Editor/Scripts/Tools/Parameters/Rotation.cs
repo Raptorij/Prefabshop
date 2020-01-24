@@ -11,6 +11,7 @@ namespace Packages.PrefabshopEditor
         public bool randomRotation;
 
         Vector3 forceRotation;
+        Vector3 plusRotation;
         Vector3 minRotation;
         Vector3 maxRotation;
 
@@ -30,13 +31,15 @@ namespace Packages.PrefabshopEditor
             minRotation = EditorGUILayout.Vector3Field("Min Val:", minRotation);
             maxRotation = EditorGUILayout.Vector3Field("Max Val:", maxRotation);
             GUI.enabled = true;
+            plusRotation = EditorGUILayout.Vector3Field("Plus Rotation", plusRotation);
         }
 
         public Vector3 GetRotation(GameObject prefabRef)
         {
-            if (usePrefabRotation)
+            var finalRotation = forceRotation;
+            if (usePrefabRotation && prefabRef != null)
             {
-                return prefabRef.transform.eulerAngles;
+                finalRotation = prefabRef.transform.eulerAngles;
             }
             if (!usePrefabRotation && randomRotation)
             {
@@ -45,9 +48,10 @@ namespace Packages.PrefabshopEditor
                 float z = Random.Range(minRotation.z, maxRotation.z);
 
                 Vector3 randomed = new Vector3(x, y, z);
-                return randomed;
+                finalRotation = randomed;
             }
-            return forceRotation;
+            finalRotation += plusRotation;
+            return finalRotation;
         }
     }
 }

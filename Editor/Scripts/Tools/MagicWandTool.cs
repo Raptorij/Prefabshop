@@ -10,21 +10,33 @@ namespace Packages.PrefabshopEditor
     {
         System.Action onReplace;
         GameObject underMouse;
+        int toolBarId;
 
         public MagicWandTool() : base()
         {
             var type = this.GetType();
-   
+            AddParameter(new SelectToolBar(type));
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
             AddParameter(new Parent(type));
             AddParameter(new IgnoringLayer(type));
             AddParameter(new ListOfObjects(type));
             AddParameter(new PrefabsSet(type));
+            AddParameter(new Rotation(type));
             AddParameter(new ButtonParameter(type));
             AddParameter(new Mask(type));
+
+            GetParameter<SelectToolBar>().toolBar = new string[] { "Prefabs", "Mesh" };
+            GetParameter<SelectToolBar>().onChangeToolBar += OnChangeToolBar;
+            OnChangeToolBar(GetParameter<SelectToolBar>().idSelect);
+
             GetParameter<ButtonParameter>().buttonName = "Replace Selected";
             GetParameter<PrefabsSet>().Activate();
+        }
+
+        public void OnChangeToolBar(int id)
+        {
+            toolBarId = id;
         }
 
         public override void SelectTool()
@@ -51,47 +63,110 @@ namespace Packages.PrefabshopEditor
             }
             if (underMouse != null)
             {
-                if (PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse) != null)
+                switch (toolBarId)
                 {
-                    underMouse = PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse);
-                    var shape = underMouse.GetComponentsInChildren<MeshFilter>();
-                    var mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                    mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
-                    mat.SetPass(0);
-                    for (int i = 0; i < shape.Length; i++)
-                    {
-                        var position = shape[i].transform.position;
-                        var rotation = shape[i].transform.rotation;
-                        var scale = shape[i].transform.lossyScale;
-
-
-                        var matrix = new Matrix4x4();
-                        matrix.SetTRS(position, rotation, scale);
-                        Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
-                    }
+                    case 0:
+                        HeightLightPrefabs();
+                        break;
+                    case 1:
+                        HeightLightMeshes();
+                        break;
                 }
+            }
+        }
+
+        void HeightLightPrefabs()
+        {
+            if (PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse) != null)
+            {
+                underMouse = PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse);
+                var shape = underMouse.GetComponentsInChildren<MeshFilter>();
+                var mat = new Material(Shader.Find("Raptorij/BrushShape"));
+                mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                mat.SetPass(0);
+                for (int i = 0; i < shape.Length; i++)
+                {
+                    var position = shape[i].transform.position;
+                    var rotation = shape[i].transform.rotation;
+                    var scale = shape[i].transform.lossyScale;
+
+
+                    var matrix = new Matrix4x4();
+                    matrix.SetTRS(position, rotation, scale);
+                    Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
+                }
+            }
+        }
+
+        void HeightLightMeshes()
+        {
+            var shape = underMouse.GetComponentsInChildren<MeshFilter>();
+            var mat = new Material(Shader.Find("Raptorij/BrushShape"));
+            mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+            mat.SetPass(0);
+            for (int i = 0; i < shape.Length; i++)
+            {
+                var position = shape[i].transform.position;
+                var rotation = shape[i].transform.rotation;
+                var scale = shape[i].transform.lossyScale;
+
+
+                var matrix = new Matrix4x4();
+                matrix.SetTRS(position, rotation, scale);
+                Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
             }
         }
 
         public override void Paint(RaycastHit drawPointHit)
         {
             base.Paint(drawPointHit);
-
-            var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+            
             var go = HandleUtility.PickGameObject(Event.current.mousePosition, false);
-            SelectPrefabs(go);
+            switch (toolBarId)
+            {
+                case 0:
+                    SelectPrefabs(go);
+                    break;
+                case 1:
+                    SelectMeshes(go);
+                    break;
+            }
         }
 
         private void SelectPrefabs(GameObject objectUnderMouse)
         {
             GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(objectUnderMouse) as GameObject;
             var listOfPrefabs = FindAllPrefabInstances(prefabAsset);
-            GetParameter<ListOfObjects>().savedList = listOfPrefabs;
-            Selection.objects = listOfPrefabs.ToArray();
+            if (Event.current.shift)
+            {
+                GetParameter<ListOfObjects>().savedList.AddRange(listOfPrefabs);
+            }
+            else
+            {
+                GetParameter<ListOfObjects>().savedList = listOfPrefabs;
+            }
+            Selection.objects = GetParameter<ListOfObjects>().savedList.ToArray();
+        }
+
+        private void SelectMeshes(GameObject objectUnderMouse)
+        {
+            var meshRef = objectUnderMouse.GetComponent<MeshFilter>().sharedMesh;
+            var meshFilters = GameObject.FindObjectsOfType<MeshFilter>();
+            List<GameObject> listOfMeshes = new List<GameObject>();
+            for (int i = 0; i < meshFilters.Length; i++)
+            {
+                if (meshFilters[i].sharedMesh == meshRef)
+                {
+                    listOfMeshes.Add(meshFilters[i].gameObject);
+                }
+            }
+            GetParameter<ListOfObjects>().savedList = listOfMeshes;
+            Selection.objects = GetParameter<ListOfObjects>().savedList.ToArray();
         }
 
         void ReplacePrefabs(string buttonName)
         {
+            GetParameter<ListOfObjects>().savedList.Clear();
             var prefabs = GetParameter<PrefabsSet>().GetSelectedPrefabs();
             if (prefabs.Count > 0)
             {
@@ -101,7 +176,7 @@ namespace Packages.PrefabshopEditor
                     GameObject obj = gameObjects[i] as GameObject;
                     var position = obj.transform.position;
                     var rotation = obj.transform.rotation;
-                    CreateObject(position, rotation);
+                    CreateObject(obj);
                 }
                 for (int i = 0; i < gameObjects.Length; i++)
                 {
@@ -114,14 +189,16 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        void CreateObject(Vector3 position, Quaternion rotation)
+        void CreateObject(GameObject refObject)
         {
             var prefabs = GetParameter<PrefabsSet>().GetSelectedPrefabs();
             if (prefabs.Count > 0)
             {
                 GameObject osd = PrefabUtility.InstantiatePrefab(prefabs[Random.Range(0, prefabs.Count)]) as GameObject;
-                osd.transform.position = position;
-                osd.transform.rotation = rotation;
+                osd.transform.position = refObject.transform.position;
+                var getRotation = GetParameter<Rotation>().GetRotation(refObject);
+                var finalEulerAngles = getRotation != Vector3.zero ? getRotation : refObject.transform.eulerAngles;
+                osd.transform.eulerAngles = finalEulerAngles;
                 Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
             }
         }
