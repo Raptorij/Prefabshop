@@ -35,7 +35,7 @@ namespace Packages.PrefabshopEditor
             selectionPoints = new List<Vector3>();
         }
 
-        public override void DrawTool(Ray drawPointHit)
+        protected override void DrawTool(Ray drawPointHit)
         {
             base.DrawTool(drawPointHit);
             for (int i = 0; i < selectionPoints.Count - 1; i++)

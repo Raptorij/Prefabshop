@@ -73,9 +73,14 @@ namespace Packages.PrefabshopEditor
         {
             Shortcuts();
             bool haveBrush = blockToggle = currentTool != null;
+            DrawMask();
+            currentTool?.CastTool();
             Handles.BeginGUI();
             {
+
+                ToolGUIInfo();
                 Rect settingsInfoRect = new Rect(1, 1, 35, 30 * possibleTools.Length + 5);
+                GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
                 GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
 
                 Rect buttonRect = new Rect(5, 5, 25, 25);
@@ -88,36 +93,65 @@ namespace Packages.PrefabshopEditor
                         break;
                     }
                 }
-            }
 
-            if (maskShape != null)
-            {
-                float y = 128;
-                Rect settingsInfoRect = new Rect(this.position.xMin + 1, this.position.yMax + y - 1, 128, y);
-                settingsInfoRect = new Rect(1, this.position.yMax - 94 - y, 212, y);
-                GUI.Box(settingsInfoRect, "Mask Options", new GUIStyle("HelpBox"));
-                Rect buttonRect = new Rect(settingsInfoRect.x + 5, settingsInfoRect.y + 5 + 18, 200, 18);
-                if (GUI.Button(buttonRect, "Reset Mask"))
+                if (maskShape != null)
                 {
-                    maskShape = null;
-                    maskOutline = null;
-                    Event.current.Use();
+                    float y = 128;
+                    Rect maskInfo = new Rect(this.position.xMin + 1, this.position.yMax + y - 1, 128, y);
+                    maskInfo = new Rect(1, this.position.yMax - 94 - y, 212, y);
+                    GUI.Box(maskInfo, "Mask Options", new GUIStyle("HelpBox"));
+                    Rect maskButtonsRect = new Rect(maskInfo.x + 5, maskInfo.y + 5 + 18, 200, 18);
+                    if (GUI.Button(maskButtonsRect, "Reset Mask"))
+                    {
+                        maskShape = null;
+                        maskOutline = null;
+                        Event.current.Use();
+                    }
+                    maskButtonsRect.y += 19;
+                    GUI.enabled = false;
+                    if (GUI.Button(maskButtonsRect, "Select prefabs inside Mask"))
+                    {
+                        maskShape = null;
+                        maskOutline = null;
+                        Event.current.Use();
+                    }
+                    GUI.enabled = true;
                 }
-                buttonRect.y += 19;
-                GUI.enabled = false;
-                if (GUI.Button(buttonRect, "Select prefabs inside Mask"))
-                {
-                    maskShape = null;
-                    maskOutline = null;
-                    Event.current.Use();
-                }
-                GUI.enabled = true;
             }
-
             Handles.EndGUI();
-            DrawMask();
-            currentTool?.CastBrush();
             Tools.hidden = blockToggle;
+        }
+
+        void ToolGUIInfo()
+        {
+            var drawPointRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+            RaycastHit drawPointHit;
+
+            var lablePos = HandleUtility.GUIPointToScreenPixelCoordinate(Event.current.mousePosition);
+            lablePos.y = Screen.height -lablePos.y;
+            string mouseInfo;
+            if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity))
+            {
+                var targetObj = drawPointHit.collider.gameObject;
+                mouseInfo =
+                    $"Name:{targetObj.name}" +
+                    (targetObj.transform.parent ? $"\nParent: {targetObj.transform.parent.name}" : "\nParent: null") +
+                    $"\nTag: {targetObj.tag}" +
+                    $"\nLayer: {LayerMask.LayerToName(targetObj.layer)}";
+            }
+            else
+            {
+                mouseInfo =
+                    $"Name:null" +
+                    "\nParent: null" +
+                    "\nTag: null" +
+                    "\nLayer: null";
+            }
+            var labelRect = GUILayoutUtility.GetRect(new GUIContent(mouseInfo), "label", GUILayout.ExpandWidth(false));
+            Rect settingsInfoRect = new Rect(lablePos, labelRect.size);
+            GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
+            GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
+            GUI.Label(settingsInfoRect, mouseInfo);
         }
 
         void DrawMask()

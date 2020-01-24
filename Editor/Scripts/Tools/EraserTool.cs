@@ -47,7 +47,7 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        public override void DrawTool(Ray ray)
+        protected override void DrawTool(Ray ray)
         {
             base.DrawTool(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));

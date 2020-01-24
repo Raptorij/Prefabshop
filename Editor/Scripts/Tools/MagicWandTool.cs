@@ -54,7 +54,7 @@ namespace Packages.PrefabshopEditor
             base.DeselectTool();
         }
 
-        public override void DrawTool(Ray drawPointHit)
+        protected override void DrawTool(Ray drawPointHit)
         {
             base.DrawTool(drawPointHit);
 

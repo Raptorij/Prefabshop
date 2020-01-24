@@ -38,8 +38,8 @@ namespace Packages.PrefabshopEditor
         {
             base.DeselectTool();
         }
-        
-        public override void DrawTool(Ray ray)
+
+        protected override void DrawTool(Ray ray)
         {
             base.DrawTool(ray);
             if (GetParameter<Mask>().HaveMask)

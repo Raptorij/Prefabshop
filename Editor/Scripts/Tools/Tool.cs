@@ -47,6 +47,16 @@ namespace Packages.PrefabshopEditor
             return null;
         }
 
+        protected Parameter AddParameter(Parameter parameter, int id)
+        {
+            if (!parameters.Exists(search => search.Identifier == parameter.Identifier))
+            {
+                parameters.Add(parameter);
+                return parameter;
+            }
+            return null;
+        }
+
         public P GetParameter<P>() where P : Parameter
         {
             return parameters.Find(search => search is P) as P;
@@ -69,28 +79,18 @@ namespace Packages.PrefabshopEditor
             OnDeselectTool?.Invoke();
         }
 
-        public virtual void CastBrush()
+        public virtual void CastTool()
         {
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             var drawPointRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             DrawTool(drawPointRay);
         }
 
-        public virtual void DrawTool(Ray drawPointRay)
+        protected virtual void DrawTool(Ray drawPointRay)
         {
             RaycastHit drawPointHit;
             if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
             {
-                var mouseRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-
-                Handles.BeginGUI();
-                Vector2 infoPos = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
-                Handles.Label(infoPos, $"Name:{drawPointHit.collider.gameObject.name}" +
-                                       (drawPointHit.collider.gameObject.transform.parent ? $"\nParent: {drawPointHit.collider.gameObject.transform.parent.name}" : "\nParent: null") +
-                                       $"\nTag: {drawPointHit.collider.gameObject.tag}" +
-                                       $"\nLayer: {LayerMask.LayerToName(drawPointHit.collider.gameObject.layer)}");
-                Handles.EndGUI();
-
                 if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
                 {
                     if (Event.current.type == EventType.MouseDown)
