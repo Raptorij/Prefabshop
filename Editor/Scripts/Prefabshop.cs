@@ -191,8 +191,12 @@ namespace Packages.PrefabshopEditor
             ToolKeyCodeAttributeAttribute attribute = brushType.GetCustomAttribute(typeof(ToolKeyCodeAttributeAttribute)) as ToolKeyCodeAttributeAttribute;
             var brushKey = attribute.keyCode;
             Rect info = new Rect(rect.x + 30, rect.y + 5, rect.width + 80, rect.height);
-            GUI.contentColor = Color.black;
-            GUI.Label(info, "[" + brushKey.ToString() + "] - " + brushType.Name.Replace("Tool", ""), new GUIStyle("MiniBoldLabel"));
+            GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
+            string buttonInfo = " [" + brushKey.ToString() + "] - " + brushType.Name.Replace("Tool", "");
+            var labelRect = GUILayoutUtility.GetRect(new GUIContent(buttonInfo), "label", GUILayout.ExpandWidth(false));
+            GUI.Box(new Rect(info.position, labelRect.size + Vector2.up * 2.5f), "", new GUIStyle("textField"));
+            //GUI.Box(new Rect(info.position, labelRect.size + Vector2.up * 2.5f), "", new GUIStyle("In BigTitle"));
+            GUI.Label(new Rect(info.position, labelRect.size), buttonInfo, new GUIStyle("MiniBoldLabel"));
             GUI.contentColor = Color.white;
         }
 
