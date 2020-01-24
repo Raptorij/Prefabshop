@@ -128,7 +128,8 @@ namespace Packages.PrefabshopEditor
             RaycastHit drawPointHit;
 
             var lablePos = HandleUtility.GUIPointToScreenPixelCoordinate(Event.current.mousePosition);
-            lablePos.y = Screen.height -lablePos.y;
+            lablePos.y = Screen.height -lablePos.y - 20f;
+            lablePos.x += 10f;
             string mouseInfo;
             if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity))
             {
