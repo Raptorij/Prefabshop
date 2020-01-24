@@ -195,7 +195,6 @@ namespace Packages.PrefabshopEditor
             string buttonInfo = " [" + brushKey.ToString() + "] - " + brushType.Name.Replace("Tool", "");
             var labelRect = GUILayoutUtility.GetRect(new GUIContent(buttonInfo), "label", GUILayout.ExpandWidth(false));
             GUI.Box(new Rect(info.position, labelRect.size + Vector2.up * 2.5f), "", new GUIStyle("textField"));
-            //GUI.Box(new Rect(info.position, labelRect.size + Vector2.up * 2.5f), "", new GUIStyle("In BigTitle"));
             GUI.Label(new Rect(info.position, labelRect.size), buttonInfo, new GUIStyle("MiniBoldLabel"));
             GUI.contentColor = Color.white;
         }
