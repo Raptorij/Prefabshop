@@ -18,19 +18,22 @@ namespace Packages.PrefabshopEditor
         {
             var type = this.GetType();
 
+            AddParameter(new InstatiatePrefab(type));
             AddParameter(new PrefabsSet(type));
-            //AddParameter(new Count(type));
+            AddParameter(new SelectToolBar(type));
+            AddParameter(new Count(type));
             AddParameter(new Step(type));
             AddParameter(new Gap(type));
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
             AddParameter(new Parent(type));
             AddParameter(new Scale(type));
+            AddParameter(new Rotation(type));
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
             AddParameter(new IgnoringLayer(type));
             AddParameter(new Mask(type));
-
+            GetParameter<SelectToolBar>().toolBar = new string[] { "By Count", "By Step", "Both" };            
             OnStartPaint += StartPaint;
             OnEndPaint += EndPain;
             GetParameter<PrefabsSet>().Activate();
@@ -51,8 +54,18 @@ namespace Packages.PrefabshopEditor
         void EndPain(RaycastHit raycastHit)
         {
             isDraw = false;
-            //CalculateByCount();
-            CalculateByStep();
+            int idToolBar = GetParameter<SelectToolBar>().idSelect;
+            switch (idToolBar)
+            {
+                case 0:
+                    CalculateByCount();
+                    break;
+                case 1:
+                    CalculateByStep();
+                    break;
+                case 2:
+                    break;
+            }            
         }
 
         void CalculateByStep()
@@ -84,14 +97,11 @@ namespace Packages.PrefabshopEditor
                 var prefabs = GetParameter<PrefabsSet>().selectedPrefabs;
                 if (prefabs.Count > 0)
                 {
-                    GameObject osd = PrefabUtility.InstantiatePrefab(prefabs[Random.Range(0, prefabs.Count)]) as GameObject;
-                    osd.transform.position = selectedPositions[i];
-                    osd.transform.rotation = Quaternion.identity;
-                    if (GetParameter<Scale>().randomScale)
-                    {
-                        osd.transform.localScale *= Random.Range(GetParameter<Scale>().minValue, GetParameter<Scale>().maxValue);
-                    }
-                    Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
+                    GetParameter<InstatiatePrefab>().CreateObject(selectedPositions[i], this);
+                }
+                else
+                {
+                    Debug.Log($"<color=magenta>[Prefabshop] </color> There is no selected any objects in Options");
                 }
             }
         }
@@ -137,7 +147,7 @@ namespace Packages.PrefabshopEditor
             {
                 for (int i = 0; i < listRaycast.Count; i++)
                 {
-                    CreateObject(listRaycast[i]);
+                    GetParameter<InstatiatePrefab>().CreateObject(listRaycast[i], this);
                 }
             }
             else
@@ -192,6 +202,7 @@ namespace Packages.PrefabshopEditor
                 {
                     var pos = selectedPositions[i];
                     Handles.DrawLine(pos, pos + Vector3.up);
+                    Handles.DrawCube(0, pos + Vector3.up, Quaternion.LookRotation(Vector3.up + Vector3.forward), 1f);
                 }
             }
         }
@@ -230,26 +241,6 @@ namespace Packages.PrefabshopEditor
         public Vector3 LerpByDistance(Vector3 A, Vector3 B, float x)
         {
             return (A + x * (B - A));
-        }
-
-        void CreateObject(RaycastHit rayHit)
-        {
-            var newPos = rayHit.point + rayHit.normal.normalized * GetParameter<Gap>().value;
-            var prefabs = GetParameter<PrefabsSet>().selectedPrefabs;
-            if (prefabs.Count > 0)
-            {
-                GameObject osd = PrefabUtility.InstantiatePrefab(prefabs[Random.Range(0, prefabs.Count)]) as GameObject;
-                osd.transform.position = newPos;
-                if (GetParameter<Scale>().randomScale)
-                {
-                    osd.transform.localScale *= Random.Range(GetParameter<Scale>().minValue, GetParameter<Scale>().maxValue);
-                }
-                osd.transform.up = rayHit.normal;
-                osd.transform.SetParent(GetParameter<Parent>().value);
-                osd.tag = GetParameter<Tag>().value;
-                osd.layer = GetParameter<Layer>().value;
-                Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
-            }
         }
     }
 }

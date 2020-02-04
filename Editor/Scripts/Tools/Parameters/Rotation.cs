@@ -9,9 +9,10 @@ namespace Packages.PrefabshopEditor
     {
         public bool usePrefabRotation;
         public bool randomRotation;
+        public bool useHitNormal;
 
         Vector3 forceRotation;
-        Vector3 plusRotation;
+        public Vector3 plusRotation;
         Vector3 minRotation;
         Vector3 maxRotation;
 
@@ -22,14 +23,16 @@ namespace Packages.PrefabshopEditor
         public override void DrawParameterGUI()
         {
             base.DrawParameterGUI();
-            GUI.enabled = !usePrefabRotation && !randomRotation;
+            GUI.enabled = !usePrefabRotation && !randomRotation && !useHitNormal;
             forceRotation = EditorGUILayout.Vector3Field("Force Rotation", forceRotation);
-            GUI.enabled = true;
+            GUI.enabled = !useHitNormal && !randomRotation;
             usePrefabRotation = EditorGUILayout.Toggle("Use Prefab Rotation:", usePrefabRotation);
-            GUI.enabled = !usePrefabRotation;
+            GUI.enabled = !usePrefabRotation && !useHitNormal;
             GUI.enabled = randomRotation = EditorGUILayout.Toggle("Random Rotation:", randomRotation);
             minRotation = EditorGUILayout.Vector3Field("Min Val:", minRotation);
             maxRotation = EditorGUILayout.Vector3Field("Max Val:", maxRotation);
+            GUI.enabled = !usePrefabRotation && !randomRotation;
+            useHitNormal = EditorGUILayout.Toggle("Use Hit Normal:", useHitNormal);
             GUI.enabled = true;
             plusRotation = EditorGUILayout.Vector3Field("Plus Rotation", plusRotation);
         }

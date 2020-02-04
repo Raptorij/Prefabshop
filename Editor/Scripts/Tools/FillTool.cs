@@ -16,9 +16,11 @@ namespace Packages.PrefabshopEditor
         {
             var type = this.GetType();
 
+            AddParameter(new InstatiatePrefab(type));
             AddParameter(new PrefabsSet(type));
             AddParameter(new Count(type));
             AddParameter(new Scale(type));
+            AddParameter(new Rotation(type));
             AddParameter(new Gap(type));
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
@@ -96,7 +98,7 @@ namespace Packages.PrefabshopEditor
                     {
                         for (int i = 0; i < GetParameter<Count>().value; i++)
                         {
-                            CreateObject(Geometry.GetRandomPointOnMesh(GetParameter<Mask>().MaskShape), Quaternion.identity);
+                            GetParameter<InstatiatePrefab>().CreateObject(Geometry.GetRandomPointOnMesh(GetParameter<Mask>().MaskShape), this);                            
                         }
                     }
                 }
@@ -165,7 +167,7 @@ namespace Packages.PrefabshopEditor
                     hitPoint = casts[i];
                 }
             }
-            CreateObject(hitPoint.point, Quaternion.FromToRotation(Vector3.up, hitPoint.normal));
+            GetParameter<InstatiatePrefab>().CreateObject(hitPoint, this);
         }
 
         void CreateObject(Vector3 position, Quaternion rotation)

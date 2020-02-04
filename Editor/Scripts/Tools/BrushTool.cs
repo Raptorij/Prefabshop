@@ -17,6 +17,7 @@ namespace Packages.PrefabshopEditor
         {
             var type = this.GetType();
 
+            AddParameter(new InstatiatePrefab(type));
             AddParameter(new PrefabsSet(type));
             AddParameter(new Shape(type));
             AddParameter(new Outer(type));
@@ -206,7 +207,7 @@ namespace Packages.PrefabshopEditor
 
                         for (int i = 0; i < listRaycast.Count; i++)
                         {
-                            CreateObject(listRaycast[i]);
+                            GetParameter<InstatiatePrefab>().CreateObject(listRaycast[i], this);
                         }
                         break;
                     }
