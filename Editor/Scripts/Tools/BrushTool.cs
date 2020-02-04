@@ -216,7 +216,7 @@ namespace Packages.PrefabshopEditor
             else
             {
                 Debug.Log($"<color=magenta>[Prefabshop] </color> There is no selected any objects in Options");
-            }
+            }            
         }
 
         void CreateObject(RaycastHit rayHit)
