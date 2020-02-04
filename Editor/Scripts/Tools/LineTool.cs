@@ -202,7 +202,7 @@ namespace Packages.PrefabshopEditor
                 {
                     var pos = selectedPositions[i];
                     Handles.DrawLine(pos, pos + Vector3.up);
-                    Handles.DrawCube(0, pos + Vector3.up, Quaternion.LookRotation(Vector3.up + Vector3.forward), 1f);
+                    Handles.DrawCube(0, pos + Vector3.up, Quaternion.LookRotation(Vector3.up + Vector3.forward), .5f);
                 }
             }
         }
