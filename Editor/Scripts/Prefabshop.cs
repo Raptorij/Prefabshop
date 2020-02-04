@@ -43,12 +43,15 @@ namespace Packages.PrefabshopEditor
         private void OnGUI()
         {
             Shortcuts();
-            scrollView = EditorGUILayout.BeginScrollView(scrollView);
+            float width = this.position.width;
+            float height = this.position.height;
+            scrollView = EditorGUILayout.BeginScrollView(scrollView, GUILayout.Width(width), GUILayout.Height(height));
             {
                 if (currentTool != null)
                 {
-                    GUILayout.Label(currentTool.GetType().Name.Replace("Tool", ": Options"), new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
-            
+                    string toolName = currentTool.GetType().Name.Replace("Tool", ": Options");
+                    GUILayout.Label(toolName, new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 23f));
+
                     for (int i = 0; i < currentTool.parameters.Count; i++)
                     {
                         if (!currentTool.parameters[i].Hidden)
@@ -63,7 +66,7 @@ namespace Packages.PrefabshopEditor
                 }
                 else
                 {
-                    GUILayout.Label("Tool isn't selected", new GUIStyle("ProgressBarBack"), GUILayout.Width(Screen.width - 10));
+                    GUILayout.Label("Tool isn't selected", new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 8f));
                 }
             }
             EditorGUILayout.EndScrollView();

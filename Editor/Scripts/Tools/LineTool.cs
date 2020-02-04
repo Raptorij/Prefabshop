@@ -19,7 +19,8 @@ namespace Packages.PrefabshopEditor
             var type = this.GetType();
 
             AddParameter(new PrefabsSet(type));
-            AddParameter(new Count(type));
+            //AddParameter(new Count(type));
+            AddParameter(new Step(type));
             AddParameter(new Gap(type));
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
@@ -50,7 +51,53 @@ namespace Packages.PrefabshopEditor
         void EndPain(RaycastHit raycastHit)
         {
             isDraw = false;
-            float distance = Vector3.Distance(startPoint, endPoint);
+            //CalculateByCount();
+            CalculateByStep();
+        }
+
+        void CalculateByStep()
+        {
+            float distance = Vector3.Distance(startPointHandle, endPointHandle);
+            List<Vector3> selectedPositions = new List<Vector3>();
+            selectedPositions.Add(startPointHandle);
+            var prevPos = startPointHandle;
+            for (float i = 0; i < distance;)
+            {
+                var targetPos = GetParameter<Step>().GetSnappedPosition(prevPos, endPointHandle);
+                float dist = (targetPos - prevPos).magnitude;
+                i += dist;
+                if (i <= distance)
+                {
+                    Vector3 from = targetPos + Vector3.up * 100f;
+                    RaycastHit hit;
+                    Physics.Raycast(from, Vector3.down, out hit, Mathf.Infinity);
+                    selectedPositions.Add(hit.point);
+                    prevPos = targetPos;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            for (int i = 0; i < selectedPositions.Count; i++)
+            {
+                var prefabs = GetParameter<PrefabsSet>().selectedPrefabs;
+                if (prefabs.Count > 0)
+                {
+                    GameObject osd = PrefabUtility.InstantiatePrefab(prefabs[Random.Range(0, prefabs.Count)]) as GameObject;
+                    osd.transform.position = selectedPositions[i];
+                    osd.transform.rotation = Quaternion.identity;
+                    if (GetParameter<Scale>().randomScale)
+                    {
+                        osd.transform.localScale *= Random.Range(GetParameter<Scale>().minValue, GetParameter<Scale>().maxValue);
+                    }
+                    Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
+                }
+            }
+        }
+
+        void CalculateByCount()
+        {
             List<Vector3> targetCastsPoint = new List<Vector3>();
             for (int i = 0; i < GetParameter<Count>().value; i++)
             {
@@ -66,7 +113,7 @@ namespace Packages.PrefabshopEditor
                 var castRay = currentCamera.ScreenPointToRay(targetCastsPoint[i]);
                 whileBreaker--;
                 RaycastHit castCheck;
-                
+
                 if (Physics.Raycast(castRay, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
                 {
                     if (!GetParameter<Mask>().CheckPoint(castCheck.point))
@@ -118,6 +165,34 @@ namespace Packages.PrefabshopEditor
             {
                 Handles.color = new Color(0, 1, 0, 1f);
                 Handles.DrawLine(startPointHandle, endPointHandle);
+
+                float distance = Vector3.Distance(startPointHandle, endPointHandle);
+                List<Vector3> selectedPositions = new List<Vector3>();
+                selectedPositions.Add(startPointHandle);
+                var prevPos = startPointHandle;
+                for (float i = 0; i < distance;)
+                {
+                    var targetPos = GetParameter<Step>().GetSnappedPosition(prevPos, endPointHandle);
+                    float dist = (targetPos - prevPos).magnitude;
+                    i += dist;
+                    if (i <= distance)
+                    {
+                        Vector3 from = targetPos + Vector3.up * 100f;
+                        RaycastHit hit;
+                        Physics.Raycast(from, Vector3.down, out hit, Mathf.Infinity);
+                        selectedPositions.Add(hit.point);
+                        prevPos = targetPos;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                for (int i = 0; i < selectedPositions.Count; i++)
+                {
+                    var pos = selectedPositions[i];
+                    Handles.DrawLine(pos, pos + Vector3.up);
+                }
             }
         }
 
