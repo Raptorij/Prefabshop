@@ -79,6 +79,10 @@ namespace Packages.PrefabshopEditor
             OnDeselectTool?.Invoke();
         }
 
+        public virtual void OnGUI()
+        {
+        }
+
         public virtual void CastTool()
         {
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
@@ -104,7 +108,6 @@ namespace Packages.PrefabshopEditor
                 {
                     OnEndPaint?.Invoke(drawPointHit);
                 }
-                SceneView.RepaintAll();
             }
         }
 

@@ -14,6 +14,14 @@ namespace Packages.PrefabshopEditor
         {
         }
 
+        public ButtonParameter(Type toolType, string name, int id) : base(toolType)
+        {
+            this.buttonName = name;
+            this.Identifier = id;
+
+            string saveId = $"[Prefabshop] {toolType.Name}.{this.GetType().Name}.{buttonName}.{Identifier}";
+        }
+
         public override void DrawParameterGUI()
         {
             base.DrawParameterGUI();

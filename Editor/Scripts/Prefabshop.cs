@@ -26,7 +26,8 @@ namespace Packages.PrefabshopEditor
         Vector2 scrollView;
         private Tool currentTool;
         private System.Type[] possibleTools;
-        private List<Tool> cachedTools = new List<Tool>();        
+        private List<Tool> cachedTools = new List<Tool>();
+        GameObject targetObj;
 
         void OnEnable()
         {
@@ -49,6 +50,7 @@ namespace Packages.PrefabshopEditor
             {
                 if (currentTool != null)
                 {
+                    currentTool.OnGUI();
                     string toolName = currentTool.GetType().Name.Replace("Tool", ": Options");
                     GUILayout.Label(toolName, new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 23f));
 
@@ -76,11 +78,11 @@ namespace Packages.PrefabshopEditor
         {
             Shortcuts();
             bool haveBrush = blockToggle = currentTool != null;
+            Tools.hidden = blockToggle;
             DrawMask();
             currentTool?.CastTool();
             Handles.BeginGUI();
             {
-
                 ToolGUIInfo();
                 Rect settingsInfoRect = new Rect(1, 1, 35, 30 * possibleTools.Length + 5);
                 GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
@@ -122,21 +124,20 @@ namespace Packages.PrefabshopEditor
                 }
             }
             Handles.EndGUI();
-            Tools.hidden = blockToggle;
         }
 
         void ToolGUIInfo()
         {
-            var drawPointRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            RaycastHit drawPointHit;
-
+            if (Event.current.type == EventType.MouseMove)
+            {
+                targetObj = HandleUtility.PickGameObject(Event.current.mousePosition, true);
+            }
             var lablePos = HandleUtility.GUIPointToScreenPixelCoordinate(Event.current.mousePosition);
             lablePos.y = Screen.height -lablePos.y - 20f;
             lablePos.x += 10f;
-            string mouseInfo;
-            if (Physics.Raycast(drawPointRay, out drawPointHit, Mathf.Infinity))
+            string mouseInfo ="";
+            if (targetObj != null)
             {
-                var targetObj = drawPointHit.collider.gameObject;
                 mouseInfo =
                     $"Name:{targetObj.name}" +
                     (targetObj.transform.parent ? $"\nParent: {targetObj.transform.parent.name}" : "\nParent: null") +
