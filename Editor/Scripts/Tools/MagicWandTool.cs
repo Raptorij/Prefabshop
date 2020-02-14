@@ -108,13 +108,16 @@ namespace Packages.PrefabshopEditor
                 mat.SetPass(0);
                 for (int i = 0; i < shape.Length; i++)
                 {
-                    var position = shape[i].transform.position;
-                    var rotation = shape[i].transform.rotation;
-                    var scale = shape[i].transform.lossyScale;
+                    if (shape[i].sharedMesh)
+                    {
+                        var position = shape[i].transform.position;
+                        var rotation = shape[i].transform.rotation;
+                        var scale = shape[i].transform.lossyScale;
 
-                    Matrix4x4 matrix = new Matrix4x4();
-                    matrix.SetTRS(position, rotation, scale);
-                    Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
+                        Matrix4x4 matrix = new Matrix4x4();
+                        matrix.SetTRS(position, rotation, scale);
+                        Graphics.DrawMeshNow(shape[i].sharedMesh, matrix, 0);
+                    }
                 }
             }
         }
