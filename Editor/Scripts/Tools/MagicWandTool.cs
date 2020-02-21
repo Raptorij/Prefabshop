@@ -202,10 +202,6 @@ namespace Packages.PrefabshopEditor
                     Undo.DestroyObjectImmediate(gameObjects[i]);
                 }
             }
-            else
-            {
-                Debug.Log($"<color=magenta>[Prefabshop] </color> There is no selected any objects in Options");
-            }
         }
 
         void CreateObject(GameObject refObject)

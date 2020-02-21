@@ -57,6 +57,7 @@ namespace Packages.PrefabshopEditor
         {
             EditorGUI.BeginChangeCheck();
             Texture = EditorGUILayout.ObjectField(this.GetType().Name, Texture, typeof(Texture2D), false) as Texture2D;
+            GUI.enabled = Texture != null;
             if (GUILayout.Button("Clear Shape"))
             {
                 Texture = null;

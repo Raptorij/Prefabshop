@@ -18,6 +18,7 @@ namespace Packages.PrefabshopEditor
         private Texture2D blueTexture;
         private Texture2D greyTexture;
         private Texture2D yellowTexture;
+        private Texture2D lockTexture;
         private float prefabListHeight;
 
         public PrefabsSet(Type toolType) : base(toolType)
@@ -40,6 +41,7 @@ namespace Packages.PrefabshopEditor
             blueTexture = new Texture2D(64, 64);
             greyTexture = new Texture2D(64, 64);
             yellowTexture = new Texture2D(64, 64);
+            lockTexture = new Texture2D(64, 64);
 
             for (int y = 0; y < blueTexture.height; y++)
             {
@@ -48,16 +50,22 @@ namespace Packages.PrefabshopEditor
                     blueTexture.SetPixel(x, y, new Color(0f, 0.8f, 1f));
                     greyTexture.SetPixel(x, y, new Color(0.125f, 0.125f, 0.125f));
                     yellowTexture.SetPixel(x, y, new Color(0.75f, 0.75f, 0));
+                    lockTexture.SetPixel(x, y, new Color(1f, 1f, 1f,.5f));
                 }
             }
 
             blueTexture.Apply();
             greyTexture.Apply();
             yellowTexture.Apply();
+            lockTexture.Apply();
         }
 
         public List<GameObject> GetSelectedPrefabs()
         {
+            if (selectedPrefabs.Count == 0)
+            {
+                EditorWindow.GetWindow<SceneView>().ShowNotification(new GUIContent("Need select some prefabs"));
+            }
             return selectedPrefabs;
         }
 
@@ -231,10 +239,21 @@ namespace Packages.PrefabshopEditor
                 {
                     EditorGUI.DrawPreviewTexture(border, preview, null, ScaleMode.ScaleToFit, 0f);
                 }
-                Color removeButton = new Color(.75f, 0, 0, 1);
+                Color removeButton = new Color(.75f, .125f, .125f, 1);
                 EditorGUI.DrawRect(removeRect, removeButton);
                 removeRect.y -= 4;
                 GUI.Label(removeRect, "-");
+                if (!Enable)
+                {
+                    border.x -= 2;
+                    border.y -= 2;
+                    border.width += 4;
+                    border.height += 4;
+                    Color guiColor = GUI.color; // Save the current GUI color
+                    GUI.color = Color.clear; // This does the magic
+                    EditorGUI.DrawTextureTransparent(border, lockTexture, ScaleMode.ScaleToFit, 0f);
+                    GUI.color = guiColor; // Get back to previous GUI color
+                }
             }
 
             int c = Mathf.FloorToInt(windowWidth / (50 + 20) + 1);
@@ -250,6 +269,13 @@ namespace Packages.PrefabshopEditor
             var dropArea = r;
             GUI.Box(dropArea, string.Empty);
             GUI.Label(dropArea, "+", EditorStyles.centeredGreyMiniLabel);
+            if (!Enable)
+            {
+                Color guiColor = GUI.color; // Save the current GUI color
+                GUI.color = Color.clear; // This does the magic
+                EditorGUI.DrawTextureTransparent(dropArea, lockTexture, ScaleMode.ScaleToFit, 0f);
+                GUI.color = guiColor; // Get back to previous GUI color
+            }
 
             switch (e.type)
             {

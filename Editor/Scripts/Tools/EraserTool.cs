@@ -51,11 +51,14 @@ namespace Packages.PrefabshopEditor
         {
             base.DrawTool(ray);
             var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
-            var raycastHit = casts[casts.Length - 1];
-            Handles.color = new Color(1, 0, 0, 0.25f);
-            Handles.SphereHandleCap(0,raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
-            Handles.color = Color.white;
-            Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+            if (casts.Length > 0)
+            {
+                var raycastHit = casts[casts.Length - 1];
+                Handles.color = new Color(1, 0, 0, 0.25f);
+                Handles.SphereHandleCap(0, raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
+                Handles.color = Color.white;
+                Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
+            }
         }
 
         public override void Paint(RaycastHit drawPointHit)

@@ -99,10 +99,6 @@ namespace Packages.PrefabshopEditor
                 {
                     GetParameter<InstatiatePrefab>().CreateObject(selectedPositions[i], this);
                 }
-                else
-                {
-                    Debug.Log($"<color=magenta>[Prefabshop] </color> There is no selected any objects in Options");
-                }
             }
         }
 
@@ -202,7 +198,7 @@ namespace Packages.PrefabshopEditor
                 {
                     var pos = selectedPositions[i];
                     Handles.DrawLine(pos, pos + Vector3.up);
-                    Handles.DrawCube(0, pos + Vector3.up, Quaternion.LookRotation(Vector3.up + Vector3.forward), .5f);
+                    Handles.CubeHandleCap(0, pos + Vector3.up, Quaternion.LookRotation(Vector3.up + Vector3.forward), .5f, EventType.Repaint);
                 }
             }
         }

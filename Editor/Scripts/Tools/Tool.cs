@@ -109,6 +109,7 @@ namespace Packages.PrefabshopEditor
                     OnEndPaint?.Invoke(drawPointHit);
                 }
             }
+            OnDrawTool?.Invoke(drawPointHit);
         }
 
         public virtual void Paint(RaycastHit drawPointHit)
