@@ -79,16 +79,13 @@ namespace Packages.PrefabshopEditor
                     EditorGUIUtility.ShowObjectPicker<BrushInfo>(setInfo, false, "", 0);
                 }
                 var pickedObj = EditorGUIUtility.GetObjectPickerObject();
-                if (pickedObj != null && pickedObj.GetType() == typeof(BrushInfo))
+                if (pickedObj != null)
                 {
-                    if (setInfo != (BrushInfo)EditorGUIUtility.GetObjectPickerObject())
-                    {
-                        setInfo = EditorGUIUtility.GetObjectPickerObject() as BrushInfo;
-                        var prefs = setInfo.brushObjects.ToArray();
-                        setPrefabs = prefs.ToList();
-                        EditorPrefs.SetString("[Prefabshop] PrefabsSetPath",AssetDatabase.GetAssetPath(setInfo));
-                        EditorWindow.GetWindow<Prefabshop>().Repaint();
-                    }
+                    setInfo = EditorGUIUtility.GetObjectPickerObject() as BrushInfo;
+                    var prefs = setInfo.brushObjects.ToArray();
+                    setPrefabs = prefs.ToList();
+                    EditorPrefs.SetString("[Prefabshop] PrefabsSetPath",AssetDatabase.GetAssetPath(setInfo));
+                    EditorWindow.GetWindow<Prefabshop>().Repaint();
                 }
                 GUI.enabled = false;
                 if (GUILayout.Button("Save as New..."))

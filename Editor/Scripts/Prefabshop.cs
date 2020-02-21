@@ -13,7 +13,12 @@ namespace Packages.PrefabshopEditor
         [MenuItem("Tools/Prefabshop")]
         static void Init()
         {
-            EditorWindow.GetWindow<Prefabshop>().Show();
+            Prefabshop window = EditorWindow.GetWindow<Prefabshop>();
+            Texture icon = Resources.Load("PrefabshopIcon") as Texture2D;
+            // Create the instance of GUIContent to assign to the window. Gives the title "RBSettings" and the icon
+            GUIContent titleContent = new GUIContent("Prefabshop", icon);
+            window.titleContent = titleContent;
+            window.Show();
         }
 
         public Mesh maskShape;
@@ -46,13 +51,33 @@ namespace Packages.PrefabshopEditor
             Shortcuts();
             float width = this.position.width;
             float height = this.position.height;
+
+
+            EditorGUILayout.BeginHorizontal();
+            if (currentTool != null)
+            {
+                string toolName = currentTool.GetType().Name.Replace("Tool", ": Options");
+                GUILayout.Label(toolName, new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 32f));
+            }
+            else
+            {
+                GUILayout.Label("Tool isn't selected", new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 32f));
+            }
+            GUIStyle iconButtonStyle = GUI.skin.FindStyle("IconButton") ?? EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).FindStyle("IconButton");
+            GUIContent popupIcon = EditorGUIUtility.IconContent("_Popup");
+            if (GUILayout.Button(popupIcon, iconButtonStyle))
+            {
+                Vector2 settingPos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+                settingPos.y += 32f;
+                PrefabshopSettings.Init(settingPos);
+            }
+            EditorGUILayout.EndHorizontal();
+            height -= 24f;
             scrollView = EditorGUILayout.BeginScrollView(scrollView, GUILayout.Width(width), GUILayout.Height(height));
             {
                 if (currentTool != null)
                 {
                     currentTool.OnGUI();
-                    string toolName = currentTool.GetType().Name.Replace("Tool", ": Options");
-                    GUILayout.Label(toolName, new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 23f));
 
                     for (int i = 0; i < currentTool.parameters.Count; i++)
                     {
@@ -66,10 +91,6 @@ namespace Packages.PrefabshopEditor
                         }
                     }
                 }
-                else
-                {
-                    GUILayout.Label("Tool isn't selected", new GUIStyle("ProgressBarBack"), GUILayout.Width(width - 8f));
-                }
             }
             EditorGUILayout.EndScrollView();
         }
@@ -80,7 +101,6 @@ namespace Packages.PrefabshopEditor
             bool haveBrush = blockToggle = currentTool != null;
             Tools.hidden = blockToggle;
             DrawMask();
-            currentTool?.CastTool();
             Handles.BeginGUI();
             {
                 ToolGUIInfo();
@@ -124,6 +144,7 @@ namespace Packages.PrefabshopEditor
                 }
             }
             Handles.EndGUI();
+            currentTool?.CastTool();
         }
 
         void ToolGUIInfo()
