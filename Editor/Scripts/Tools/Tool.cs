@@ -20,16 +20,8 @@ namespace Packages.PrefabshopEditor
         public event System.Action OnSelectTool;
         public event System.Action OnDeselectTool;
         public event System.Action<RaycastHit> OnDrawTool;
-        public event System.Action<RaycastHit> OnStartPaint;
-        public event System.Action<RaycastHit> OnPaint;
-        public event System.Action<RaycastHit> OnEndPaint;
-        
-        public GameObject targetSpawnObject;
 
-        public float dragDelta;
-
-        private Vector2 previousPosition;
-
+        public string info;
         public List<Parameter> parameters = new List<Parameter>();
 
         public Tool()
@@ -99,22 +91,31 @@ namespace Packages.PrefabshopEditor
                 {
                     if (Event.current.type == EventType.MouseDown)
                     {
-                        targetSpawnObject = drawPointHit.collider.gameObject;
-                        OnStartPaint?.Invoke(drawPointHit);
+                        OnStartPaint(drawPointHit);
                     }
                     Paint(drawPointHit);
                 }
                 if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
                 {
-                    OnEndPaint?.Invoke(drawPointHit);
+                    OnEndPaint(drawPointHit);
                 }
             }
             OnDrawTool?.Invoke(drawPointHit);
         }
 
+        protected virtual void OnStartPaint(RaycastHit startPointHit)
+        {
+
+        }
+
         public virtual void Paint(RaycastHit drawPointHit)
         {
-            OnPaint?.Invoke(drawPointHit);
+
+        }
+
+        protected virtual void OnEndPaint(RaycastHit endPointHit)
+        {
+
         }
     }
 }

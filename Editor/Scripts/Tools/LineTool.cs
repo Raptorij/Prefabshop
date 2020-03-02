@@ -13,6 +13,7 @@ namespace Packages.PrefabshopEditor
         public Vector3 startPointHandle;
         public Vector3 endPointHandle;
         public bool isDraw;
+        private GameObject targetSpawnObject;
 
         public LineTool() : base()
         {
@@ -33,16 +34,16 @@ namespace Packages.PrefabshopEditor
             AddParameter(new FilterObject(type));
             AddParameter(new IgnoringLayer(type));
             AddParameter(new Mask(type));
-            GetParameter<SelectToolBar>().toolBar = new string[] { "By Count", "By Step", "Both" };            
-            OnStartPaint += StartPaint;
-            OnEndPaint += EndPain;
+            GetParameter<SelectToolBar>().toolBar = new string[] { "By Count", "By Step", "Both" };
             GetParameter<PrefabsSet>().Activate();
         }
 
-        void StartPaint(RaycastHit drawPointHit)
+        protected override void OnStartPaint(RaycastHit startPointHit)
         {
-            startPointHandle = drawPointHit.point;
-            startPoint = Camera.current.WorldToScreenPoint(drawPointHit.point);
+            base.OnStartPaint(startPointHit);
+            targetSpawnObject = startPointHit.collider.gameObject;
+            startPointHandle = startPointHit.point;
+            startPoint = Camera.current.WorldToScreenPoint(startPointHit.point);
             isDraw = true;
         }
 
@@ -51,8 +52,8 @@ namespace Packages.PrefabshopEditor
             base.Paint(drawPointHit);
         }
 
-        void EndPain(RaycastHit raycastHit)
-        {
+        protected override void OnEndPaint(RaycastHit endPointHit)
+        {         
             isDraw = false;
             int idToolBar = GetParameter<SelectToolBar>().idSelect;
             switch (idToolBar)
@@ -65,7 +66,8 @@ namespace Packages.PrefabshopEditor
                     break;
                 case 2:
                     break;
-            }            
+            }
+            info = $"\nDistance: {0}";
         }
 
         void CalculateByStep()
@@ -173,6 +175,7 @@ namespace Packages.PrefabshopEditor
                 Handles.DrawLine(startPointHandle, endPointHandle);
 
                 float distance = Vector3.Distance(startPointHandle, endPointHandle);
+                info = $"\nDistance: {distance}";
                 List<Vector3> selectedPositions = new List<Vector3>();
                 selectedPositions.Add(startPointHandle);
                 var prevPos = startPointHandle;

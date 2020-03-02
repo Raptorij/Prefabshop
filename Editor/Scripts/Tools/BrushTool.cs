@@ -12,6 +12,7 @@ namespace Packages.PrefabshopEditor
         Mesh shapeSide;
         public Texture2D previousTexture;
         public RaycastHit raycastHit;
+        private GameObject targetSpawnObject;
 
         public BrushTool() : base()
         {
@@ -127,6 +128,12 @@ namespace Packages.PrefabshopEditor
         void ResetShape()
         {
             shape = null;
+        }
+
+        protected override void OnStartPaint(RaycastHit startPointHit)
+        {
+            base.OnStartPaint(startPointHit);
+            targetSpawnObject = startPointHit.collider.gameObject;
         }
 
         public override void Paint(RaycastHit drawPointHit)

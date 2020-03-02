@@ -24,12 +24,11 @@ namespace Packages.PrefabshopEditor
             AddParameter(new IgnoringLayer(type));
             AddParameter(new CachedGameObjects(type));
             AddParameter(new Mask(type));
-            OnEndPaint += EndPaint;
 
             GetParameter<SelectToolBar>().toolBar = new string[] { "By PrefabsSet", "All Prefabs" };
             GetParameter<SelectToolBar>().onChangeToolBar += OnChangeToolBar;
             OnChangeToolBar(GetParameter<SelectToolBar>().idSelect);
-            GetParameter<PrefabsSet>().Activate();
+            GetParameter<PrefabsSet>().Activate();            
         }
 
         public void OnChangeToolBar(int id)
@@ -117,8 +116,9 @@ namespace Packages.PrefabshopEditor
             }
         }
 
-        private void EndPaint(RaycastHit raycastHit)
+        protected override void OnEndPaint(RaycastHit endPointHit)
         {
+            base.OnEndPaint(endPointHit);
             EditorApplication.update += RemoveCechedObjects;
         }
 

@@ -160,7 +160,7 @@ namespace Packages.PrefabshopEditor
             if (targetObj != null)
             {
                 mouseInfo =
-                    $"Name:{targetObj.name}" +
+                    $"Name: {targetObj.name}" +
                     (targetObj.transform.parent ? $"\nParent: {targetObj.transform.parent.name}" : "\nParent: null") +
                     $"\nTag: {targetObj.tag}" +
                     $"\nLayer: {LayerMask.LayerToName(targetObj.layer)}";
@@ -172,6 +172,10 @@ namespace Packages.PrefabshopEditor
                     "\nParent: null" +
                     "\nTag: null" +
                     "\nLayer: null";
+            }
+            if (currentTool != null)
+            {
+                mouseInfo += currentTool.info;
             }
             var labelRect = GUILayoutUtility.GetRect(new GUIContent(mouseInfo), "label", GUILayout.ExpandWidth(false));
             Rect settingsInfoRect = new Rect(lablePos, labelRect.size);
