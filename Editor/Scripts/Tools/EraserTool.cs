@@ -7,6 +7,7 @@ using System;
 
 namespace Packages.PrefabshopEditor
 {
+    [ToolColor(ToolColorAttribute.ToolUseType.Remove)]
     [ToolKeyCodeAttribute(KeyCode.C)]
     public class EraserTool : Tool
     {
@@ -21,7 +22,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Radius(type));
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
             AddParameter(new CachedGameObjects(type));
             AddParameter(new Mask(type));
 
@@ -49,11 +50,11 @@ namespace Packages.PrefabshopEditor
         protected override void DrawTool(Ray ray)
         {
             base.DrawTool(ray);
-            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<Ignore>().layer));
             if (casts.Length > 0)
             {
                 var raycastHit = casts[casts.Length - 1];
-                Handles.color = new Color(1, 0, 0, 0.25f);
+                Handles.color = toolColor;
                 Handles.SphereHandleCap(0, raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
                 Handles.color = Color.white;
                 Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);

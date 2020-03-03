@@ -7,7 +7,8 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [ToolKeyCodeAttribute(KeyCode.K)]
+    [ToolColor(ToolColorAttribute.ToolUseType.Other)]
+    [ToolKeyCodeAttribute(KeyCode.U)]
     public class MagnetTool : Tool
     {
         public RaycastHit raycastHit;
@@ -21,7 +22,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Outer(type));
             AddParameter(new Radius(type));
             AddParameter(new Scale(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
             AddParameter(new CachedGameObjects(type));
             AddParameter(new Mask(type));
             
@@ -41,7 +42,7 @@ namespace Packages.PrefabshopEditor
         protected override void DrawTool(Ray ray)
         {
             base.DrawTool(ray);
-            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<Ignore>().layer));
             var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)
             {
@@ -53,7 +54,7 @@ namespace Packages.PrefabshopEditor
                 }
             }
 
-            Handles.color = new Color(0, 1, 0, 0.1f);
+            Handles.color = toolColor;
             Handles.SphereHandleCap(0, raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
             Handles.color = Color.white;
             Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);

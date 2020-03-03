@@ -34,11 +34,13 @@ namespace Packages.PrefabshopEditor
         private List<Tool> cachedTools = new List<Tool>();
         GameObject targetObj;
 
+        public System.Action onMaskReset;
+
         void OnEnable()
         {
             SceneView.duringSceneGui += this.OnSceneGUI;
             var types = Assembly.GetExecutingAssembly().GetTypes();
-            possibleTools = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) && type != typeof(SmudgeTool) select type).ToArray();           
+            possibleTools = (from System.Type type in types where type.IsSubclassOf(typeof(Tool)) select type).ToArray();           
         }
 
         void OnDisable()
@@ -130,6 +132,7 @@ namespace Packages.PrefabshopEditor
                     {
                         maskShape = null;
                         maskOutline = null;
+                        onMaskReset?.Invoke();
                         Event.current.Use();
                     }
                     maskButtonsRect.y += 19;
@@ -149,41 +152,51 @@ namespace Packages.PrefabshopEditor
 
         void ToolGUIInfo()
         {
-            if (Event.current.type == EventType.MouseMove)
+            if (EditorPrefs.GetBool("[Prefabshop] underMouseInfo", true))
             {
-                targetObj = HandleUtility.PickGameObject(Event.current.mousePosition, true);
+                bool nameInfo = EditorPrefs.GetBool("[Prefabshop] nameInfo", true);
+                bool parentInfo = EditorPrefs.GetBool("[Prefabshop] parentInfo", true);
+                bool tagInfo = EditorPrefs.GetBool("[Prefabshop] tagInfo", true);
+                bool layerInfo = EditorPrefs.GetBool("[Prefabshop] layerInfo", true);
+                bool toolInfo = EditorPrefs.GetBool("[Prefabshop] toolInfo", true);
+
+                if (Event.current.type == EventType.MouseMove)
+                {
+                    targetObj = HandleUtility.PickGameObject(Event.current.mousePosition, true);
+                }
+                var lablePos = HandleUtility.GUIPointToScreenPixelCoordinate(Event.current.mousePosition);
+                lablePos.y = Screen.height - lablePos.y - 20f;
+                lablePos.x += 10f;
+                string mouseInfo = "";
+                if (targetObj != null)
+                {
+                    mouseInfo =
+                        (nameInfo ? $"Name: {targetObj.name}" : "") +
+                        (parentInfo ? $"\nParent: {targetObj.transform.parent}" : "") +
+                        (tagInfo ? $"\nTag: {targetObj.tag}" : "") +
+                        (layerInfo ? $"\nLayer: {LayerMask.LayerToName(targetObj.layer)}" : "") + 
+                        (toolInfo && currentTool != null ? currentTool.info : "");
+                }
+                else
+                {
+                    mouseInfo =
+                        (nameInfo ? "Name: " : "") +
+                        (parentInfo ? "\nParent: " : "") +
+                        (tagInfo ? "\nTag: " : "") +
+                        (layerInfo ? "\nLayer: " : "") +
+                        (toolInfo && currentTool != null ? currentTool.info : "");
+                }
+
+                mouseInfo = mouseInfo.Trim();
+
+                var labelRect = GUILayoutUtility.GetRect(new GUIContent(mouseInfo), "label", GUILayout.ExpandWidth(false));
+                Rect settingsInfoRect = new Rect(lablePos, labelRect.size);
+                GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
+                GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
+                GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
+                GUI.Label(settingsInfoRect, mouseInfo);
+                GUI.contentColor = Color.white;
             }
-            var lablePos = HandleUtility.GUIPointToScreenPixelCoordinate(Event.current.mousePosition);
-            lablePos.y = Screen.height -lablePos.y - 20f;
-            lablePos.x += 10f;
-            string mouseInfo ="";
-            if (targetObj != null)
-            {
-                mouseInfo =
-                    $"Name: {targetObj.name}" +
-                    (targetObj.transform.parent ? $"\nParent: {targetObj.transform.parent.name}" : "\nParent: null") +
-                    $"\nTag: {targetObj.tag}" +
-                    $"\nLayer: {LayerMask.LayerToName(targetObj.layer)}";
-            }
-            else
-            {
-                mouseInfo =
-                    $"Name:null" +
-                    "\nParent: null" +
-                    "\nTag: null" +
-                    "\nLayer: null";
-            }
-            if (currentTool != null)
-            {
-                mouseInfo += currentTool.info;
-            }
-            var labelRect = GUILayoutUtility.GetRect(new GUIContent(mouseInfo), "label", GUILayout.ExpandWidth(false));
-            Rect settingsInfoRect = new Rect(lablePos, labelRect.size);
-            GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
-            GUI.Box(settingsInfoRect, "", new GUIStyle("HelpBox"));
-            GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
-            GUI.Label(settingsInfoRect, mouseInfo);
-            GUI.contentColor = Color.white;
         }
 
         void DrawMask()
@@ -219,7 +232,7 @@ namespace Packages.PrefabshopEditor
             }
             GUI.backgroundColor = Color.white;
 
-            ToolKeyCodeAttributeAttribute attribute = brushType.GetCustomAttribute(typeof(ToolKeyCodeAttributeAttribute)) as ToolKeyCodeAttributeAttribute;
+            ToolKeyCodeAttribute attribute = brushType.GetCustomAttribute(typeof(ToolKeyCodeAttribute)) as ToolKeyCodeAttribute;
             var brushKey = attribute.keyCode;
             Rect info = new Rect(rect.x + 30, rect.y + 5, rect.width + 80, rect.height);
             GUI.contentColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
@@ -269,7 +282,7 @@ namespace Packages.PrefabshopEditor
             }
             for (int i = 0; i < possibleTools.Length; i++)
             {
-                ToolKeyCodeAttributeAttribute attribute = possibleTools[i].GetCustomAttribute(typeof(ToolKeyCodeAttributeAttribute)) as ToolKeyCodeAttributeAttribute;
+                ToolKeyCodeAttribute attribute = possibleTools[i].GetCustomAttribute(typeof(ToolKeyCodeAttribute)) as ToolKeyCodeAttribute;
                 var brushKey = attribute.keyCode;
                 if (e.keyCode == brushKey)
                 {

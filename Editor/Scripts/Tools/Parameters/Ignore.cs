@@ -6,23 +6,33 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    public class IgnoringLayer : Parameter
+    public class Ignore : Parameter
     {
-        public LayerMask value;
+        public LayerMask layer;
 
-        public IgnoringLayer(Type toolType) : base(toolType)
+        public int ignorePrefabsId;
+        string[] ignorePrefabsTabs = new string[] { "Selected Prefabs", "All in PrefabSet", "All Prefabs" };
+        public System.Action<int> onChangeToolBar;
+
+        public Ignore(Type toolType) : base(toolType)
         {
-            value = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", value);
+            layer = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", layer);
+            ignorePrefabsId = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", ignorePrefabsId);
         }
 
         public override void DrawParameterGUI()
         {
             base.DrawParameterGUI();
+            GUILayout.Label("Ignore Options");
             EditorGUI.BeginChangeCheck();
-            value = LayerMaskField(this.GetType().Name, value);
+            layer = LayerMaskField("Layer:", layer);
+            GUILayout.Label("Prefabs Ignore");
+            ignorePrefabsId = GUILayout.Toolbar(ignorePrefabsId, ignorePrefabsTabs);
             if (EditorGUI.EndChangeCheck())
             {
-                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", value);
+                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", layer);
+                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", ignorePrefabsId);
+                onChangeToolBar?.Invoke(ignorePrefabsId);
             }
         }
 

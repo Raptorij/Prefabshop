@@ -1,0 +1,46 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+ 
+namespace Packages.PrefabshopEditor
+{
+    [ToolColor(ToolColorAttribute.ToolUseType.Paint)]
+    //[ToolKeyCode(KeyCode)]
+    public class #SCRIPTNAME# : Tool
+    {
+        public #SCRIPTNAME#() : base()
+        {
+            var type = this.GetType();
+        }
+
+        public override void SelectTool()
+        {
+            base.SelectTool();
+        }
+
+        public override void DeselectTool()
+        {
+            base.DeselectTool();
+        } 
+        
+        protected override void DrawTool(Ray ray)
+        {
+            base.DrawTool(ray);
+        } 
+        
+        protected override void OnStartPaint(RaycastHit startPointHit)
+        {
+            base.OnStartPaint(startPointHit);
+        }
+
+        public override void Paint(RaycastHit drawPointHit)
+        {
+            base.Paint(drawPointHit);
+        }
+        
+        protected override void OnEndPaint(RaycastHit endPointHit)
+        {
+            base.OnEndPaint(endPointHit);
+        }
+    }
+}

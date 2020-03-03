@@ -14,22 +14,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brushObjects:
   - {fileID: 2602752127934446500, guid: c0da57286956eff4788385a1f7968c48, type: 3}
-  settings:
-    placeBrush: {r: 0, g: 1, b: 0, a: 0.1}
-    size: 10
-    count: 1
-    gap: 0
-    targetTag: Untagged
-    randomScaleMin: 1
-    randomScaleMax: 1
-    toolBar: 0
-    menuOptions:
-    - World
-    - Camera
-    - Normal
-    targetParent: {fileID: 0}
-    targetLayer: 0
-    ignoringLayer:
-      serializedVersion: 2
-      m_Bits: 0
-    checkObjeck: 0

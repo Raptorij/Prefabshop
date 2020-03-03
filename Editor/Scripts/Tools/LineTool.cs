@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
+    [ToolColor(ToolColorAttribute.ToolUseType.Paint)]
     [ToolKeyCodeAttribute(KeyCode.L)]
     public class LineTool : Tool
     {
@@ -32,7 +34,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Rotation(type));
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
             AddParameter(new Mask(type));
             GetParameter<SelectToolBar>().toolBar = new string[] { "By Count", "By Step", "Both" };
             GetParameter<PrefabsSet>().Activate();
@@ -122,7 +124,7 @@ namespace Packages.PrefabshopEditor
                 whileBreaker--;
                 RaycastHit castCheck;
 
-                if (Physics.Raycast(castRay, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
+                if (Physics.Raycast(castRay, out castCheck, Mathf.Infinity, ~(GetParameter<Ignore>().layer)))
                 {
                     if (!GetParameter<Mask>().CheckPoint(castCheck.point))
                     {
@@ -157,7 +159,7 @@ namespace Packages.PrefabshopEditor
         protected override void DrawTool(Ray ray)
         {
             base.DrawTool(ray);
-            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<Ignore>().layer));
             var closest = Mathf.Infinity;
             var currentCamera = Camera.current;
             for (int k = 0; k < casts.Length; k++)
@@ -171,7 +173,7 @@ namespace Packages.PrefabshopEditor
             }
             if (casts.Length > 0 && isDraw)
             {
-                Handles.color = new Color(0, 1, 0, 1f);
+                Handles.color = toolColor;
                 Handles.DrawLine(startPointHandle, endPointHandle);
 
                 float distance = Vector3.Distance(startPointHandle, endPointHandle);

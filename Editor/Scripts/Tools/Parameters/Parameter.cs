@@ -7,6 +7,13 @@ namespace Packages.PrefabshopEditor
 {
     public abstract class Parameter : IParameter
     {
+        [MenuItem(itemName: "Assets/Create/Prefabshop/New Parameter Script", isValidateFunction: false, priority: 52)]
+        public static void CreateScriptFromTemplate()
+        {
+            var path = AssetDatabase.GetAssetPath(Resources.Load("Parameter.cs"));
+            ProjectWindowUtil.CreateScriptAssetFromTemplateFile(path, "NewParameter.cs");
+        }
+
         private bool hidden = false;
 
         public virtual bool Hidden

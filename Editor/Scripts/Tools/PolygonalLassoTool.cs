@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -20,7 +21,19 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Count(type));
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
+
+            var previousFocus = EditorWindow.focusedWindow;
+            var prefabshop = EditorWindow.GetWindow<Prefabshop>();
+            prefabshop.onMaskReset += OnMaskReset;
+            previousFocus.Focus();
+        }
+
+        private void OnMaskReset()
+        {
+            shapeSelection = null;
+            squareMesh = null;
+            selectionPoints.Clear();
         }
 
         public override void SelectTool()

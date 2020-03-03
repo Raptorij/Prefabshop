@@ -36,7 +36,7 @@ namespace Packages.PrefabshopEditor
             var previousFocus = EditorWindow.focusedWindow;
             prefabshop = EditorWindow.GetWindow<Prefabshop>();
             haveMask = prefabshop.maskShape != null;
-            maskShape = prefabshop.maskShape;
+            maskShape = prefabshop.maskShape;            
             previousFocus.Focus();
         }        
 

@@ -5,7 +5,8 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [ToolKeyCodeAttribute(KeyCode.B)]
+    [ToolColor(ToolColorAttribute.ToolUseType.Paint)]
+    [ToolKeyCode(KeyCode.B)]
     public class BrushTool : Tool
     {
         public Mesh shape;
@@ -32,7 +33,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Rotation(type));
             AddParameter(new FirstObjectFilter(type));
             AddParameter(new FilterObject(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
             AddParameter(new Mask(type));
 
             GetParameter<Shape>().onTextureChange += ResetShape;
@@ -53,7 +54,7 @@ namespace Packages.PrefabshopEditor
         protected override void DrawTool(Ray ray)
         {
             base.DrawTool(ray);
-            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+            var casts = Physics.RaycastAll(ray, Mathf.Infinity, ~(GetParameter<Ignore>().layer));
             var closest = Mathf.Infinity;
             for (int k = 0; k < casts.Length; k++)
             {
@@ -96,7 +97,7 @@ namespace Packages.PrefabshopEditor
             }
             else
             {
-                Handles.color = new Color(0, 1, 0, 0.1f);
+                Handles.color = toolColor;
                 Handles.DrawSolidDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
                 Handles.color = Color.white;
                 Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
@@ -119,7 +120,7 @@ namespace Packages.PrefabshopEditor
                 var matrix = new Matrix4x4();
                 matrix.SetTRS(position, rotation, scale);
                 var mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                mat.SetColor("_Color", toolColor);
                 mat.SetPass(0);
                 Graphics.DrawMeshNow(shape, matrix, 0);
             }
@@ -143,7 +144,7 @@ namespace Packages.PrefabshopEditor
             if (prefabs.Count > 0)
             {
                 var castRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-                var casts = Physics.RaycastAll(castRay, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value));
+                var casts = Physics.RaycastAll(castRay, Mathf.Infinity, ~(GetParameter<Ignore>().layer));
 
                 var originalVert = new Vector3[] { };
                 var rotatedVert = new Vector3[] { };
@@ -198,7 +199,7 @@ namespace Packages.PrefabshopEditor
                             Ray rayRandom = new Ray(castRay.origin, position - castRay.origin);
                             RaycastHit castCheck;
 
-                            if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
+                            if (Physics.Raycast(rayRandom, out castCheck, Mathf.Infinity, ~(GetParameter<Ignore>().layer)))
                             {
                                 if (!CheckCast(castCheck))
                                 {

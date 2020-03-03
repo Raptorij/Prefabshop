@@ -1,0 +1,30 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+
+namespace Packages.PrefabshopEditor
+{
+    public class #SCRIPTNAME# : Parameter
+    {
+        public #SCRIPTNAME#(Type toolType) : base(toolType)
+        {
+            //Load parameter values
+            //value = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", value);
+        }
+
+        public override void DrawParameterGUI()
+        {
+            base.DrawParameterGUI();
+            EditorGUI.BeginChangeCheck();
+            //Draw changeable values
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                //Save changes of parameter values
+                //EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", value);
+            }
+        }
+    }
+}

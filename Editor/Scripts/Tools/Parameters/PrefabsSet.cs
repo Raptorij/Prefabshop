@@ -9,7 +9,7 @@ namespace Packages.PrefabshopEditor
 {
     public class PrefabsSet : Parameter
     {
-        public BrushInfo setInfo;
+        public PrefabSetInfo setInfo;
 
         public List<GameObject> setPrefabs = new List<GameObject>();
         public List<GameObject> selectedPrefabs = new List<GameObject>();
@@ -27,7 +27,7 @@ namespace Packages.PrefabshopEditor
 
             if (path != "")
             {
-                setInfo = AssetDatabase.LoadAssetAtPath(path, typeof(BrushInfo)) as BrushInfo;
+                setInfo = AssetDatabase.LoadAssetAtPath(path, typeof(PrefabSetInfo)) as PrefabSetInfo;
                 if (setInfo != null)
                 {
                     var prefs = setInfo.brushObjects.ToArray();
@@ -50,7 +50,8 @@ namespace Packages.PrefabshopEditor
                     blueTexture.SetPixel(x, y, new Color(0f, 0.8f, 1f));
                     greyTexture.SetPixel(x, y, new Color(0.125f, 0.125f, 0.125f));
                     yellowTexture.SetPixel(x, y, new Color(0.75f, 0.75f, 0));
-                    lockTexture.SetPixel(x, y, new Color(1f, 1f, 1f,.5f));
+                    var lockColor = EditorGUIUtility.isProSkin ? new Color(0, 0, 0, .5f) : new Color(1, 1, 1, .5f);
+                    lockTexture.SetPixel(x, y, lockColor);
                 }
             }
 
@@ -76,12 +77,12 @@ namespace Packages.PrefabshopEditor
             {
                 if (GUILayout.Button("Load PrefabsSetInfo"))
                 {                    
-                    EditorGUIUtility.ShowObjectPicker<BrushInfo>(setInfo, false, "", 0);
+                    EditorGUIUtility.ShowObjectPicker<PrefabSetInfo>(setInfo, false, "", 0);
                 }
                 var pickedObj = EditorGUIUtility.GetObjectPickerObject();
                 if (pickedObj != null)
                 {
-                    setInfo = EditorGUIUtility.GetObjectPickerObject() as BrushInfo;
+                    setInfo = EditorGUIUtility.GetObjectPickerObject() as PrefabSetInfo;
                     var prefs = setInfo.brushObjects.ToArray();
                     setPrefabs = prefs.ToList();
                     EditorPrefs.SetString("[Prefabshop] PrefabsSetPath",AssetDatabase.GetAssetPath(setInfo));
@@ -106,6 +107,8 @@ namespace Packages.PrefabshopEditor
                 {
                     var prefs = setPrefabs.ToArray();
                     setInfo.brushObjects = prefs.ToList();
+                    EditorUtility.SetDirty(setInfo);
+                    AssetDatabase.SaveAssets();
                 }
                 GUI.backgroundColor = Color.white;
                 GUI.enabled = true;
@@ -115,7 +118,7 @@ namespace Packages.PrefabshopEditor
             if (setInfo != null)
             {
                 GUI.enabled = false;
-                EditorGUILayout.ObjectField("Prefabs Set:", setInfo, typeof(BrushInfo), false);
+                EditorGUILayout.ObjectField("Prefabs Set:", setInfo, typeof(PrefabSetInfo), false);
                 GUI.enabled = true;
                 DisplayPrefabs(setPrefabs);
             }
@@ -210,6 +213,11 @@ namespace Packages.PrefabshopEditor
                         EditorWindow.GetWindow<Prefabshop>().Repaint();
                         return;
                     }
+                }
+
+                if (setInfo == null)
+                {
+                    return;
                 }
 
                 if (selectedPrefabs.Contains(prefabs[i]))

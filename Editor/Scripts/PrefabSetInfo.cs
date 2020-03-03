@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
-    [CreateAssetMenu(fileName = "Brush", menuName = "Prefabshop/Brush Info", order = 1)]
-    public class BrushInfo : ScriptableObject
+    [CreateAssetMenu(fileName = "PrefabSet", menuName = "Prefabshop/Prefab Set Info", order = 1)]
+    public class PrefabSetInfo : ScriptableObject
     {
         public List<GameObject> brushObjects = new List<GameObject>();
     }

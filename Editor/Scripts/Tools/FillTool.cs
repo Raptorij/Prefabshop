@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
+    [ToolColor(ToolColorAttribute.ToolUseType.Paint)]
     [ToolKeyCodeAttribute(KeyCode.G)]
     public class FillTool : Tool
     {
@@ -25,7 +26,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
             AddParameter(new Parent(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
             AddParameter(new ListOfObjects(type));
             AddParameter(new Mask(type));
             GetParameter<PrefabsSet>().Activate();
@@ -47,12 +48,12 @@ namespace Packages.PrefabshopEditor
             if (GetParameter<Mask>().HaveMask)
             {
                 RaycastHit drawPointHit;
-                if (Physics.Raycast(ray, out drawPointHit, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
+                if (Physics.Raycast(ray, out drawPointHit, Mathf.Infinity, ~(GetParameter<Ignore>().layer)))
                 {
                     if (GetParameter<Mask>().CheckPoint(drawPointHit.point))
                     {
                         var mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                        mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                        mat.SetColor("_Color", toolColor);
                         mat.SetPass(0);
                         Graphics.DrawMeshNow(GetParameter<Mask>().MaskShape, Matrix4x4.identity, 0);
                     }
@@ -78,7 +79,7 @@ namespace Packages.PrefabshopEditor
                     {
                         drawMat = new Material(Shader.Find("Raptorij/BrushShape"));
                     }
-                    drawMat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                    drawMat.SetColor("_Color", toolColor);
                     drawMat.SetPass(0);
                     Graphics.DrawMeshNow(shape, matrix, 0);
                 }
@@ -92,7 +93,7 @@ namespace Packages.PrefabshopEditor
             if (GetParameter<Mask>().HaveMask)
             {
                 RaycastHit raycast;
-                if (Physics.Raycast(castRay, out raycast, Mathf.Infinity, ~(GetParameter<IgnoringLayer>().value)))
+                if (Physics.Raycast(castRay, out raycast, Mathf.Infinity, ~(GetParameter<Ignore>().layer)))
                 {
                     if (GetParameter<Mask>().CheckPoint(raycast.point))
                     {

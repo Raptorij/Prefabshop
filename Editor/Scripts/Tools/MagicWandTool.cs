@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Packages.PrefabshopEditor
 {
+    [ToolColor(ToolColorAttribute.ToolUseType.Other)]
     [ToolKeyCodeAttribute(KeyCode.M)]
     public class MagicWandTool : Tool
     {
@@ -20,7 +21,7 @@ namespace Packages.PrefabshopEditor
             AddParameter(new Tag(type));
             AddParameter(new Layer(type));
             AddParameter(new Parent(type));
-            AddParameter(new IgnoringLayer(type));
+            AddParameter(new Ignore(type));
             AddParameter(new ListOfObjects(type));
             AddParameter(new PrefabsSet(type));
             AddParameter(new Rotation(type));
@@ -104,7 +105,7 @@ namespace Packages.PrefabshopEditor
                 underMouse = PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse);
                 var shape = underMouse.GetComponentsInChildren<MeshFilter>();
                 Material mat = new Material(Shader.Find("Raptorij/BrushShape"));
-                mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+                mat.SetColor("_Color", toolColor);
                 mat.SetPass(0);
                 for (int i = 0; i < shape.Length; i++)
                 {
@@ -126,7 +127,7 @@ namespace Packages.PrefabshopEditor
         {
             var shape = underMouse.GetComponentsInChildren<MeshFilter>();
             Material mat = new Material(Shader.Find("Raptorij/BrushShape"));
-            mat.SetColor("_Color", new Color(0, 1, 0, 0.25f));
+            mat.SetColor("_Color", toolColor);
             mat.SetPass(0);
             for (int i = 0; i < shape.Length; i++)
             {
