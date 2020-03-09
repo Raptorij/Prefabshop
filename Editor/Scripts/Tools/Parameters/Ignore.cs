@@ -10,14 +10,16 @@ namespace Packages.PrefabshopEditor
     {
         public LayerMask layer;
 
+        public bool ignorePrefabs;
         public int ignorePrefabsId;
-        string[] ignorePrefabsTabs = new string[] { "Selected Prefabs", "All in PrefabSet", "All Prefabs" };
+        string[] ignorePrefabsTabs = new string[] {"Selected Prefabs", "All in PrefabSet", "All Prefabs" };
         public System.Action<int> onChangeToolBar;
 
         public Ignore(Type toolType) : base(toolType)
         {
-            layer = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", layer);
-            ignorePrefabsId = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", ignorePrefabsId);
+            ignorePrefabs = EditorPrefs.GetBool($"[Prefabshop] {toolType.Name}.{this.GetType().Name} PrefabsIgnore", ignorePrefabs);
+            layer = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name} Layer", layer);
+            ignorePrefabsId = EditorPrefs.GetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name} IgnoreId", ignorePrefabsId);
         }
 
         public override void DrawParameterGUI()
@@ -26,12 +28,15 @@ namespace Packages.PrefabshopEditor
             GUILayout.Label("Ignore Options");
             EditorGUI.BeginChangeCheck();
             layer = LayerMaskField("Layer:", layer);
-            GUILayout.Label("Prefabs Ignore");
+            ignorePrefabs = EditorGUILayout.Toggle("Prefabs Ignore", ignorePrefabs);
+            GUI.enabled = ignorePrefabs;
             ignorePrefabsId = GUILayout.Toolbar(ignorePrefabsId, ignorePrefabsTabs);
+            GUI.enabled = true;
             if (EditorGUI.EndChangeCheck())
             {
-                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", layer);
-                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name}", ignorePrefabsId);
+                EditorPrefs.SetBool($"[Prefabshop] {toolType.Name}.{this.GetType().Name} PrefabsIgnore", ignorePrefabs);
+                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name} Layer", layer);
+                EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name} IgnoreId", ignorePrefabsId);
                 onChangeToolBar?.Invoke(ignorePrefabsId);
             }
         }
