@@ -13,19 +13,24 @@ namespace Packages.PrefabshopEditor
     {
         public RaycastHit raycastHit;
         private float lastInterval;
+        private double editorDeltaTime;
+        private double lastTimeSinceStartup;
+        Material drawMat;
+        private Mesh shape;
 
         public MagnetTool() : base()
         {
             var type = this.GetType();
             
             AddParameter(new PrefabsSet(type));
+            AddParameter(new FloatParameter(type, "Strenght", 0));
             AddParameter(new Outer(type));
             AddParameter(new Radius(type));
             AddParameter(new Scale(type));
             AddParameter(new Ignore(type));
             AddParameter(new CachedGameObjects(type));
             AddParameter(new Mask(type));
-            
+                        
             GetParameter<PrefabsSet>().Activate();            
         }
 
@@ -54,8 +59,24 @@ namespace Packages.PrefabshopEditor
                 }
             }
 
-            Handles.color = toolColor;
-            Handles.SphereHandleCap(0, raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
+            if(shape == null)
+            {
+                var primitiveGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                shape = primitiveGo.GetComponent<MeshFilter>().sharedMesh;
+                primitiveGo.hideFlags = HideFlags.DontSave | HideFlags.NotEditable | HideFlags.HideInHierarchy;
+                GameObject.DestroyImmediate(primitiveGo);
+            }
+
+            Matrix4x4 matrix = new Matrix4x4();
+            matrix.SetTRS(raycastHit.point, Quaternion.identity, Vector3.one * GetParameter<Radius>().value * 2);
+            if (drawMat == null)
+            {
+                drawMat = new Material(Shader.Find("Raptorij/BrushShapeZ"));
+            }
+            drawMat.SetColor("_Color", toolColor);
+            drawMat.SetPass(0);
+            Graphics.DrawMeshNow(shape, matrix, 0);
+
             Handles.color = Color.white;
             Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
         }
@@ -65,6 +86,7 @@ namespace Packages.PrefabshopEditor
             base.OnStartPaint(startPointHit);
             GetParameter<CachedGameObjects>().gameObjects.Clear();
             lastInterval = Time.realtimeSinceStartup;
+            lastTimeSinceStartup = 0;
             EditorApplication.update += UpdateEditor;
         }
 
@@ -101,36 +123,42 @@ namespace Packages.PrefabshopEditor
         {
             base.OnEndPaint(endPointHit);
             GetParameter<CachedGameObjects>().gameObjects.Clear();
+            lastTimeSinceStartup = 0;
             EditorApplication.update -= UpdateEditor;
         }
 
         private void UpdateEditor()
         {
-            float timeNow = Time.realtimeSinceStartup;
-            if (timeNow > lastInterval + 0.001f)
+            if (lastTimeSinceStartup == 0f)
             {
-                var cached = GetParameter<CachedGameObjects>().gameObjects;
-                if (cached.Count > 0)
+                lastTimeSinceStartup = EditorApplication.timeSinceStartup;
+            }
+            editorDeltaTime = EditorApplication.timeSinceStartup - lastTimeSinceStartup;
+            lastTimeSinceStartup = EditorApplication.timeSinceStartup;
+
+            var cached = GetParameter<CachedGameObjects>().gameObjects;
+            if (cached.Count > 0)
+            {
+                Undo.RegisterCompleteObjectUndo(cached.ToArray(), "Magnet Objs");
+                Undo.FlushUndoRecordObjects();
+                for (int i = 0; i < cached.Count; i++)
                 {
-                    for (int i = 0; i < cached.Count; i++)
+                    var heading = raycastHit.point - cached[i].transform.position;
+                    var distance = heading.magnitude;
+                    if (distance <= GetParameter<Radius>().value)
                     {
-                        var heading = raycastHit.point - cached[i].transform.position;
-                        var distance = heading.magnitude;
-                        if (distance <= GetParameter<Radius>().value)
-                        {
-                            var direction = heading / distance;
+                        var direction = heading / distance;
 
-                            int sign = GetParameter<Outer>().value ? -1 : 1;
+                        int sign = GetParameter<Outer>().value ? -1 : 1;
 
-                            cached[i].transform.position += direction * sign * (timeNow - lastInterval);
-                        }
-                        else
-                        {
-                            GetParameter<CachedGameObjects>().gameObjects.Remove(cached[i]);
-                            return;
-                        }
+                        cached[i].transform.position += direction * sign * (float)editorDeltaTime * GetParameter<FloatParameter>().value;                            
                     }
-                }
+                    else
+                    {
+                        GetParameter<CachedGameObjects>().gameObjects.Remove(cached[i]);
+                        return;
+                    }
+                }                    
             }
         }
     }

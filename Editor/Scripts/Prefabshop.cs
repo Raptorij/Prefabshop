@@ -45,8 +45,14 @@ namespace Packages.PrefabshopEditor
 
         void OnDisable()
         {
+            Tools.hidden = false;
             SceneView.duringSceneGui -= this.OnSceneGUI;
-        }        
+        }
+
+        private void OnDestroy()
+        {
+            Tools.hidden = false;
+        }
 
         private void OnGUI()
         {

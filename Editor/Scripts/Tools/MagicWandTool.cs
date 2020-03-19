@@ -104,7 +104,7 @@ namespace Packages.PrefabshopEditor
             {
                 underMouse = PrefabUtility.GetOutermostPrefabInstanceRoot(underMouse);
                 var shape = underMouse.GetComponentsInChildren<MeshFilter>();
-                Material mat = new Material(Shader.Find("Raptorij/BrushShape"));
+                Material mat = new Material(Shader.Find("Raptorij/BrushShapeZ"));
                 mat.SetColor("_Color", toolColor);
                 mat.SetPass(0);
                 for (int i = 0; i < shape.Length; i++)
@@ -126,7 +126,7 @@ namespace Packages.PrefabshopEditor
         void HeightLightMeshes()
         {
             var shape = underMouse.GetComponentsInChildren<MeshFilter>();
-            Material mat = new Material(Shader.Find("Raptorij/BrushShape"));
+            Material mat = new Material(Shader.Find("Raptorij/BrushShapeZ"));
             mat.SetColor("_Color", toolColor);
             mat.SetPass(0);
             for (int i = 0; i < shape.Length; i++)

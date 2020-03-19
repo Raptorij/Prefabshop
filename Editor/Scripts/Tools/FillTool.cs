@@ -77,7 +77,7 @@ namespace Packages.PrefabshopEditor
                     matrix.SetTRS(position, rotation, scale);
                     if (drawMat == null)
                     {
-                        drawMat = new Material(Shader.Find("Raptorij/BrushShape"));
+                        drawMat = new Material(Shader.Find("Raptorij/BrushShapeZ"));
                     }
                     drawMat.SetColor("_Color", toolColor);
                     drawMat.SetPass(0);
