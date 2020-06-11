@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -39,6 +40,18 @@ namespace Packages.PrefabshopEditor
                 EditorPrefs.SetInt($"[Prefabshop] {toolType.Name}.{this.GetType().Name} IgnoreId", ignorePrefabsId);
                 onChangeToolBar?.Invoke(ignorePrefabsId);
             }
+        }
+
+        public RaycastHit GetHit(RaycastHit[] allHits)
+        {
+            int targetId = 0;
+            System.Array.Sort(allHits, (x, y) => x.distance.CompareTo(y.distance));
+            for (int i = 0; i < allHits.Length; i++)
+            {
+                
+            }
+
+            return allHits[targetId];
         }
 
         static LayerMask LayerMaskField(string label, LayerMask layerMask)
