@@ -12,6 +12,8 @@ namespace Packages.PrefabshopEditor
     public class EraserTool : Tool
     {
         public bool byPrefabSet;
+        Mesh shape;
+        Material drawMat;
 
         public EraserTool() : base()
         {
@@ -54,8 +56,25 @@ namespace Packages.PrefabshopEditor
             if (casts.Length > 0)
             {
                 var raycastHit = casts[casts.Length - 1];
-                Handles.color = toolColor;
-                Handles.SphereHandleCap(0, raycastHit.point, Quaternion.identity, GetParameter<Radius>().value * 2, EventType.Repaint);
+
+                if (shape == null)
+                {
+                    var primitiveGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    shape = primitiveGo.GetComponent<MeshFilter>().sharedMesh;
+                    primitiveGo.hideFlags = HideFlags.DontSave | HideFlags.NotEditable | HideFlags.HideInHierarchy;
+                    GameObject.DestroyImmediate(primitiveGo);
+                }
+
+                Matrix4x4 matrix = new Matrix4x4();
+                matrix.SetTRS(raycastHit.point, Quaternion.identity, Vector3.one * GetParameter<Radius>().value * 2);
+                if (drawMat == null)
+                {
+                    drawMat = new Material(Shader.Find("Raptorij/BrushShapeZ"));
+                }
+                drawMat.SetColor("_Color", toolColor);
+                drawMat.SetPass(0);
+                Graphics.DrawMeshNow(shape, matrix, 0);
+
                 Handles.color = Color.white;
                 Handles.DrawWireDisc(raycastHit.point, raycastHit.normal, GetParameter<Radius>().value);
             }
