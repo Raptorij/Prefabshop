@@ -32,7 +32,8 @@ namespace Packages.PrefabshopEditor
             GetParameter<SelectToolBar>().toolBar = new string[] { "Prefabs", "Mesh" };
             GetParameter<SelectToolBar>().onChangeToolBar += OnChangeToolBar;
             OnChangeToolBar(GetParameter<SelectToolBar>().idSelect);
-            
+
+            GetParameter<PrefabsSet>().needHaveSelection = false;
             GetParameter<PrefabsSet>().Activate();
         }
 

@@ -10,6 +10,7 @@ namespace Packages.PrefabshopEditor
     public class PrefabsSet : Parameter
     {
         public PrefabSetInfo setInfo;
+        public bool needHaveSelection = true;
 
         public List<GameObject> setPrefabs = new List<GameObject>();
         public List<GameObject> selectedPrefabs = new List<GameObject>();
@@ -63,7 +64,7 @@ namespace Packages.PrefabshopEditor
 
         public List<GameObject> GetSelectedPrefabs()
         {
-            if (selectedPrefabs.Count == 0)
+            if (selectedPrefabs.Count == 0 && needHaveSelection)
             {
                 EditorWindow.GetWindow<SceneView>().ShowNotification(new GUIContent("Need select some prefabs"));
             }
