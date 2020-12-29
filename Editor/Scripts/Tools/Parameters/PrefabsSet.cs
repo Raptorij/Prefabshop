@@ -22,6 +22,9 @@ namespace Packages.PrefabshopEditor
         private Texture2D lockTexture;
         private float prefabListHeight;
 
+        private bool selectSet;
+        private UnityEngine.Object pickedObj;
+
         public PrefabsSet(Type toolType) : base(toolType)
         {
             string path = EditorPrefs.GetString("[Prefabshop] PrefabsSetPath");
@@ -79,15 +82,26 @@ namespace Packages.PrefabshopEditor
                 if (GUILayout.Button("Load PrefabsSetInfo"))
                 {                    
                     EditorGUIUtility.ShowObjectPicker<PrefabSetInfo>(setInfo, false, "", 0);
+                    selectSet = true;
                 }
-                var pickedObj = EditorGUIUtility.GetObjectPickerObject();
+                if (selectSet)
+                {
+                    pickedObj = EditorGUIUtility.GetObjectPickerObject();                    
+                }
                 if (pickedObj != null)
                 {
                     setInfo = EditorGUIUtility.GetObjectPickerObject() as PrefabSetInfo;
-                    var prefs = setInfo.brushObjects.ToArray();
-                    setPrefabs = prefs.ToList();
-                    EditorPrefs.SetString("[Prefabshop] PrefabsSetPath",AssetDatabase.GetAssetPath(setInfo));
-                    EditorWindow.GetWindow<Prefabshop>().Repaint();
+                    if (setInfo != null)
+                    {
+                        var prefs = setInfo.brushObjects.ToArray();
+                        setPrefabs = prefs.ToList();
+                        EditorPrefs.SetString("[Prefabshop] PrefabsSetPath", AssetDatabase.GetAssetPath(setInfo));
+                        EditorWindow.GetWindow<Prefabshop>().Repaint();
+                    }
+                }
+                else
+                {
+                    selectSet = false;
                 }
                 GUI.enabled = false;
                 if (GUILayout.Button("Save as New..."))

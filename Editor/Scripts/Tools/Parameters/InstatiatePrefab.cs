@@ -33,12 +33,11 @@ namespace Packages.PrefabshopEditor
                     osd.transform.localScale *= Random.Range(tool.GetParameter<Scale>().minValue, tool.GetParameter<Scale>().maxValue);
                 }
                 osd.transform.SetParent(tool.GetParameter<Parent>().value);
-                osd.transform.eulerAngles = tool.GetParameter<Rotation>().GetRotation(selectedPrefab);
                 if (tool.GetParameter<Rotation>().useHitNormal)
                 {
                     osd.transform.up = rayHit.normal;
-                    osd.transform.localEulerAngles += tool.GetParameter<Rotation>().plusRotation;
                 }
+                osd.transform.eulerAngles = tool.GetParameter<Rotation>().GetRotation(selectedPrefab);
                 osd.tag = tool.GetParameter<Tag>().value;
                 osd.layer = tool.GetParameter<Layer>().value;
                 Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");

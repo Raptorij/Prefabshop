@@ -27,11 +27,11 @@ namespace Packages.PrefabshopEditor
             forceRotation = EditorGUILayout.Vector3Field("Force Rotation", forceRotation);
             GUI.enabled = !useHitNormal && !randomRotation && Enable;
             usePrefabRotation = EditorGUILayout.Toggle("Use Prefab Rotation:", usePrefabRotation);
-            GUI.enabled = !usePrefabRotation && !useHitNormal && Enable;
+            GUI.enabled = !usePrefabRotation && Enable;
             GUI.enabled = randomRotation = EditorGUILayout.Toggle("Random Rotation:", randomRotation);
             minRotation = EditorGUILayout.Vector3Field("Min Val:", minRotation);
             maxRotation = EditorGUILayout.Vector3Field("Max Val:", maxRotation);
-            GUI.enabled = !usePrefabRotation && !randomRotation && Enable;
+            GUI.enabled = !usePrefabRotation && Enable;
             useHitNormal = EditorGUILayout.Toggle("Use Hit Normal:", useHitNormal);
             GUI.enabled = true && Enable;
             plusRotation = EditorGUILayout.Vector3Field("Plus Rotation", plusRotation);

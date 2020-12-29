@@ -223,28 +223,6 @@ namespace Packages.PrefabshopEditor
             }       
         }
 
-        void CreateObject(RaycastHit rayHit)
-        {
-            var newPos = rayHit.point + rayHit.normal.normalized * GetParameter<Gap>().value;
-            var prefabs = GetParameter<PrefabsSet>().GetSelectedPrefabs();
-            if (prefabs.Count > 0)
-            {
-                var selectedPrefab = prefabs[Random.Range(0, prefabs.Count)];
-                GameObject osd = PrefabUtility.InstantiatePrefab(selectedPrefab) as GameObject;
-                osd.transform.position = newPos;
-                if (GetParameter<Scale>().randomScale)
-                {
-                    osd.transform.localScale *= Random.Range(GetParameter<Scale>().minValue, GetParameter<Scale>().maxValue);
-                }
-                osd.transform.up = rayHit.normal;
-                osd.transform.SetParent(GetParameter<Parent>().value);
-                osd.transform.eulerAngles = GetParameter<Rotation>().GetRotation(selectedPrefab);
-                osd.tag = GetParameter<Tag>().value;
-                osd.layer = GetParameter<Layer>().value;
-                Undo.RegisterCreatedObjectUndo(osd, "Create Prefab Instance");
-            }
-        }
-
         bool CheckCast(RaycastHit cast)
         {
             var hitObj = cast.collider.gameObject;
