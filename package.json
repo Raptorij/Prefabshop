@@ -1,0 +1,19 @@
+{
+    "name": "com.raptorij.prefabshop",
+    "version": "1.0.0",
+    "displayName": "Prefabshop",
+    "description": "Tool for pain prefabs on surface",
+    "unity": "2019.3",
+    "dependencies": {
+    },
+    "keywords": [
+        "Prefabs"
+    ],
+    "author": {
+        "name": "Raptorij",
+        "url": "https://github.com/Raptorij"
+    },
+    "hideInEditor": false,
+    "samples": [
+    ]
+}
