@@ -82,26 +82,26 @@ namespace Packages.PrefabshopEditor
                 if (GUILayout.Button("Load PrefabsSetInfo"))
                 {                    
                     EditorGUIUtility.ShowObjectPicker<PrefabSetInfo>(setInfo, false, "", 0);
-                    selectSet = true;
                 }
-                if (selectSet)
+                if (Event.current.commandName == "ObjectSelectorUpdated")
                 {
-                    pickedObj = EditorGUIUtility.GetObjectPickerObject();                    
-                }
-                if (pickedObj != null)
-                {
-                    setInfo = EditorGUIUtility.GetObjectPickerObject() as PrefabSetInfo;
-                    if (setInfo != null)
+                    // do a thing relating to the object picker
+                    pickedObj = EditorGUIUtility.GetObjectPickerObject();
+                    if (pickedObj != null)
                     {
-                        var prefs = setInfo.brushObjects.ToArray();
-                        setPrefabs = prefs.ToList();
-                        EditorPrefs.SetString("[Prefabshop] PrefabsSetPath", AssetDatabase.GetAssetPath(setInfo));
-                        EditorWindow.GetWindow<Prefabshop>().Repaint();
+                        setInfo = EditorGUIUtility.GetObjectPickerObject() as PrefabSetInfo;
+                        if (setInfo != null)
+                        {
+                            var prefs = setInfo.brushObjects.ToArray();
+                            setPrefabs = prefs.ToList();
+                            EditorPrefs.SetString("[Prefabshop] PrefabsSetPath", AssetDatabase.GetAssetPath(setInfo));
+                            EditorWindow.GetWindow<Prefabshop>().Repaint();
+                        }
                     }
-                }
-                else
-                {
-                    selectSet = false;
+                    else
+                    {
+                        selectSet = false;
+                    }
                 }
                 GUI.enabled = false;
                 if (GUILayout.Button("Save as New..."))
